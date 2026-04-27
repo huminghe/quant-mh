@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "rss-mcp": {
+      "command": "node",
+      "args": [
+        "node_modules/tsx/dist/cli.mjs",
+        "src/index.ts"
+      ],
+      "cwd": "/Users/huminghe/.mcp-servers/rss-mcp",
+      "env": {
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}
