@@ -24,10 +24,16 @@ A股量化交易研究与策略代码库，个人实盘项目。
 quant-mh/
 ├── CLAUDE.md          # 本文件
 ├── README.md
-├── docs/              # 调研笔记、技术方案、学习记录
-├── data/              # 数据获取与处理脚本
-├── strategies/        # 交易策略
-└── backtest/          # 回测脚本与结果
+├── a_stock/           # A股量化（主要研究方向）
+│   ├── strategies/    # 交易策略
+│   ├── backtest/      # 回测脚本与结果
+│   ├── data/          # 数据获取与处理脚本
+│   └── docs/          # A股相关调研笔记
+├── crypto/            # 加密货币策略
+│   ├── analysis/      # 策略分析脚本（CSV分析、盈亏比统计等）
+│   └── docs/          # 调研笔记、暂停机制设计文档
+└── shared/            # 两个项目共用
+    └── scripts/       # RSS工具、数据脚本等
 ```
 
 ## A股交易限制（重要背景）
