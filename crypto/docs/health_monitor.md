@@ -1,6 +1,6 @@
 # 策略健康度监控
 
-最后更新：2026-05-06
+最后更新：2026-05-13（策略组合分析见 strategy_combination_analysis.md）
 
 ## 监控频率
 
@@ -51,14 +51,39 @@
 | 2023Q3 | 1.73 | 2023Q4反弹至2.59 |
 | 2026Q2 | 1.14 | 待观察 |
 
+## 各标的回撤情况（2026-05-13，以初始投入 20,000 USDT 为分母）
+
+| 标的 | 峰值日期 | 峰值P&L | 当前P&L | 亏损 | 回撤% | 状态 |
+|------|---------|---------|---------|------|-------|------|
+| JUP | 2026-02-27 | 36,134 | 35,601 | -533 | -2.7% | 正常 |
+| SOL | 2025-11-26 | 61,530 | 54,746 | -6,784 | -33.9% | 观察 |
+| ADA | 2026-02-16 | 53,580 | 45,609 | -7,971 | -39.9% | 不加仓，适时减仓 |
+| PEPE | 2026-02-14 | 43,796 | 34,785 | -9,011 | -45.1% | 不加仓，适时减仓 |
+| LINK | 2025-08-12 | 34,031 | 23,588 | -10,443 | -52.2% | 待决策（结构性问题） |
+| ARB | 2025-08-11 | 24,538 | 14,372 | -10,166 | -50.8% | 待决策（结构性问题） |
+| LDO | 2025-09-01 | 24,962 | 13,626 | -11,336 | -56.7% | 待决策（结构性问题） |
+
+**待决策原因（LINK/ARB/LDO）：** 代币经济结构性问题——代币不捕获协议价值、机构系统性卖出、持续解锁压力，期望值为负。已确认应停止运行，具体执行方式待定。
+
 ## 计算工具
 
-使用 `crypto/analysis/strategy_analysis.py` 分析导出的 CSV：
+使用 `crypto/analysis/strategy_analysis.py` 分析单策略逐笔 CSV：
 
 ```bash
 source venv/bin/activate
 python crypto/analysis/strategy_analysis.py ~/Downloads/策略导出文件.csv
 ```
+
+使用 `crypto/analysis/portfolio_analysis.py` 分析多策略组合（输入 Excel）：
+
+```bash
+source venv/bin/activate
+python crypto/analysis/portfolio_analysis.py \
+  ~/Downloads/v3_3h.xlsx ~/Downloads/v2.xlsx ~/Downloads/ema.xlsx \
+  --names v3_3h v2 ema
+```
+
+输出：相关性矩阵 + 所有组合的 Sharpe/最大回撤/月胜率对比，自动标注最优组合。
 
 滚动盈亏比也可以在 TradingView 策略里直接画，参考 Pine Script v6 实现：
 
