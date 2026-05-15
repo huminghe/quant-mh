@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Data files (large, not useful for context)
+a_stock/data/*.csv
+a_stock/data/*.parquet
+a_stock/data/*.h5
+crypto/data/
+
+# Backtest results
+a_stock/backtest/results/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
