@@ -1,3 +1,5 @@
+> **已由 `multi_asset_combination_analysis.md` 取代，本文档仅供存档参考。**
+
 # 策略组合分析：ETH 与 SOL
 
 最后更新：2026-05-13

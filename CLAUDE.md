@@ -22,7 +22,7 @@
 ### 加密货币
 - **策略**：双向趋势跟踪（做多+做空），Pine Script v6，约30个标的
 - **执行**：TradingView Webhook → OKX/Binance 全自动
-- **分析**：Python（`crypto/analysis/strategy_analysis.py`）
+- **分析**：Python（`crypto/analysis/run_analysis.py` 一键入口，自动扫描 xlsx → 生成 HTML 图表 + Excel 报告）
 - **文档**：暂停机制（`crypto/docs/pause_mechanism.md`）、健康度监控（`crypto/docs/health_monitor.md`）、趋势跟踪研究（`crypto/docs/trend_following_research.md`）
 
 ## 目录结构
@@ -37,7 +37,7 @@ quant-mh/
 │   ├── data/          # 数据获取与处理脚本
 │   └── docs/          # A股相关调研笔记
 ├── crypto/            # 加密货币策略
-│   ├── analysis/      # 策略分析脚本（CSV分析、盈亏比统计等）
+│   ├── analysis/      # 策略分析脚本（run_analysis.py 一键入口，含收益/回撤/相关性/热力图/滚动分析）
 │   └── docs/          # 调研笔记、暂停机制设计文档
 └── shared/            # 两个项目共用
     └── scripts/       # RSS工具、数据脚本等

@@ -67,23 +67,14 @@
 
 ## 计算工具
 
-使用 `crypto/analysis/strategy_analysis.py` 分析单策略逐笔 CSV：
+使用 `crypto/analysis/run_analysis.py` 一键分析（自动扫描 ~/Downloads/ 最新 xlsx）：
 
 ```bash
-source venv/bin/activate
-python crypto/analysis/strategy_analysis.py ~/Downloads/策略导出文件.csv
+cd ~/Documents/projects/quant-mh/crypto/analysis
+python3 run_analysis.py --dir ~/Downloads/
 ```
 
-使用 `crypto/analysis/portfolio_analysis.py` 分析多策略组合（输入 Excel）：
-
-```bash
-source venv/bin/activate
-python crypto/analysis/portfolio_analysis.py \
-  ~/Downloads/v3_3h.xlsx ~/Downloads/v2.xlsx ~/Downloads/ema.xlsx \
-  --names v3_3h v2 ema
-```
-
-输出：相关性矩阵 + 所有组合的 Sharpe/最大回撤/月胜率对比，自动标注最优组合。
+输出：收益走势图、组合回撤图、相关性矩阵、月度热力图、滚动分析、详细 Excel 报告，保存到 `charts_YYYY-MM-DD/` 目录。
 
 滚动盈亏比也可以在 TradingView 策略里直接画，参考 Pine Script v6 实现：
 

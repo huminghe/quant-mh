@@ -1,1 +1,3 @@
 .claude/
+__pycache__/
+crypto/analysis/charts_*/
