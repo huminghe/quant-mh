@@ -1,3 +1,5 @@
 .claude/
 __pycache__/
-crypto/analysis/charts_*/
+# 分析结果目录：排除大文件，保留 MD 结论、解读和 PNG 图表
+crypto/analysis/charts_*/*.html
+crypto/analysis/charts_*/*.xlsx

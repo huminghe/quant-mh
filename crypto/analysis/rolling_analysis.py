@@ -130,14 +130,11 @@ def plot_rolling(data: dict, out_path: str, window: int = 12):
 
         common = dict(x=d["dates"], name=name,
                       line=dict(color=color, dash=dash, width=1.8),
-                      legendgroup=asset,
-                      legendgrouptitle_text=asset if strat == list(
-                          {k.split("_")[1] for k in data if k.startswith(asset)}
-                      )[0] else None)
+                      legendgroup=key)
 
-        fig.add_trace(go.Scatter(**common, y=d["sharpe"],  showlegend=True),  row=1, col=1)
-        fig.add_trace(go.Scatter(**common, y=d["max_dd"],  showlegend=False), row=2, col=1)
-        fig.add_trace(go.Scatter(**common, y=d["win_rate"],showlegend=False), row=3, col=1)
+        fig.add_trace(go.Scatter(**common, y=d["sharpe"],   showlegend=True),  row=1, col=1)
+        fig.add_trace(go.Scatter(**common, y=d["max_dd"],   showlegend=False), row=2, col=1)
+        fig.add_trace(go.Scatter(**common, y=d["win_rate"], showlegend=False), row=3, col=1)
 
     # 参考线
     fig.add_hline(y=0,  line_dash="dash", line_color="gray", line_width=1, row=1, col=1)
@@ -148,7 +145,7 @@ def plot_rolling(data: dict, out_path: str, window: int = 12):
         height=800,
         template="plotly_white",
         hovermode="x unified",
-        legend=dict(groupclick="toggleitem", tracegroupgap=6),
+        legend=dict(tracegroupgap=6),
     )
     fig.update_yaxes(ticksuffix="%", row=2, col=1)
     fig.update_yaxes(ticksuffix="%", row=3, col=1)

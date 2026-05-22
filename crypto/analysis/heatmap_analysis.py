@@ -81,26 +81,56 @@ def build_combo_monthly(files: dict[str, str], base: str
         strats_per.setdefault(a, []).append(s)
 
     combos = dict(raw)
-    for a in assets:
-        keys = [f"{a}_{s}" for s in strats_per.get(a, []) if f"{a}_{s}" in raw]
-        if keys:
-            combos_built[f"{a}融合"] = merge_avg(*keys)
-            combos[f"{a}融合"] = combos_built[f"{a}融合"]
+    single_asset_mode = len(assets) == 1
 
-    # 跨标的组合（只在有对应融合时构建）
-    fused = [f"{a}融合" for a in assets if f"{a}融合" in combos_built]
-    for i in range(len(fused)):
-        for j in range(i + 1, len(fused)):
-            name = f"{fused[i].replace('融合','')}+{fused[j].replace('融合','')}"
-            combos_built[name] = merge_avg(fused[i], fused[j])
-            combos[name] = combos_built[name]
-    if len(fused) >= 3:
-        name3 = "+".join(f.replace("融合", "") for f in fused[:3])
-        combos_built[name3] = merge_avg(*fused[:3])
-        combos[name3] = combos_built[name3]
-    if len(fused) >= 4:
-        combos_built["全4标的"] = merge_avg(*fused)
-        combos["全4标的"] = combos_built["全4标的"]
+    if single_asset_mode:
+        # 单标的：每个版本独立，直接构建版本间组合
+        a = assets[0]
+        strats = strats_per.get(a, [])
+        units = {s: raw[f"{a}_{s}"] for s in strats if f"{a}_{s}" in raw}
+        unit_list = list(units.keys())
+        # 两两
+        for i in range(len(unit_list)):
+            for j in range(i + 1, len(unit_list)):
+                u1, u2 = unit_list[i], unit_list[j]
+                name = f"{u1}+{u2}"
+                combos_built[name] = merge_avg(f"{a}_{u1}", f"{a}_{u2}")
+                combos[name] = combos_built[name]
+        # 三版本
+        for i in range(len(unit_list)):
+            for j in range(i + 1, len(unit_list)):
+                for k in range(j + 1, len(unit_list)):
+                    u1, u2, u3 = unit_list[i], unit_list[j], unit_list[k]
+                    name = f"{u1}+{u2}+{u3}"
+                    combos_built[name] = merge_avg(f"{a}_{u1}", f"{a}_{u2}", f"{a}_{u3}")
+                    combos[name] = combos_built[name]
+        # 全版本
+        if len(unit_list) >= 4:
+            combos_built["全版本等权"] = merge_avg(*[f"{a}_{s}" for s in unit_list])
+            combos["全版本等权"] = combos_built["全版本等权"]
+    else:
+        # 多标的：先按标的融合，再跨标的组合
+        for a in assets:
+            keys = [f"{a}_{s}" for s in strats_per.get(a, []) if f"{a}_{s}" in raw]
+            if keys:
+                combos_built[f"{a}融合"] = merge_avg(*keys)
+                combos[f"{a}融合"] = combos_built[f"{a}融合"]
+
+        fused = [f"{a}融合" for a in assets if f"{a}融合" in combos_built]
+        for i in range(len(fused)):
+            for j in range(i + 1, len(fused)):
+                name = f"{fused[i].replace('融合','')}+{fused[j].replace('融合','')}"
+                combos_built[name] = merge_avg(fused[i], fused[j])
+                combos[name] = combos_built[name]
+        for i in range(len(fused)):
+            for j in range(i + 1, len(fused)):
+                for k in range(j + 1, len(fused)):
+                    name = "+".join(f.replace("融合", "") for f in [fused[i], fused[j], fused[k]])
+                    combos_built[name] = merge_avg(fused[i], fused[j], fused[k])
+                    combos[name] = combos_built[name]
+        if len(fused) >= 4:
+            combos_built["全4标的"] = merge_avg(*fused)
+            combos["全4标的"] = combos_built["全4标的"]
 
     return combos
 
@@ -150,13 +180,26 @@ def plot_heatmaps(combos: dict[str, dict[tuple[int, int], float]],
                   keys: list[str], out_path: str, page_title: str):
     """将多个策略/组合的热力图拼成一个 HTML 文件。"""
     n = len(keys)
+    # 每个热力图固定高度（px），标题行 40px + 每年 32px
+    per_heights = []
+    for key in keys:
+        monthly = combos.get(key, {})
+        years, _ = monthly_pnl_to_matrix(monthly)
+        per_heights.append(40 + len(years) * 32)
+
+    total_height = sum(per_heights) + n * 60  # 60px 间距/标题
+    height = max(600, total_height)
+
+    # vertical_spacing 用绝对像素换算为比例，最小 0.03
+    spacing = max(0.03, 60 / height)
+
     fig = make_subplots(
         rows=n, cols=1,
         subplot_titles=keys,
-        vertical_spacing=0.04 / max(n, 1),
+        vertical_spacing=spacing,
+        row_heights=per_heights,
     )
 
-    row_heights = []
     for i, key in enumerate(keys, 1):
         monthly = combos.get(key, {})
         years, matrix = monthly_pnl_to_matrix(monthly)
@@ -164,11 +207,6 @@ def plot_heatmaps(combos: dict[str, dict[tuple[int, int], float]],
             continue
         hm = make_heatmap(years, matrix, key)
         fig.add_trace(hm, row=i, col=1)
-        row_heights.append(len(years))
-
-    # 动态高度：每年约 28px
-    total_rows = sum(row_heights) + len(keys) * 3
-    height = max(600, total_rows * 28 + len(keys) * 60)
 
     fig.update_layout(
         title=dict(text=page_title, font=dict(size=15)),
@@ -183,18 +221,28 @@ def run(files: dict[str, str], base: str, out_dir: str):
     print("构建月度数据...")
     combos = build_combo_monthly(files, base)
 
-    # 图1：11条单策略
-    single_keys = [k for k in combos if "_" in k]
+    # 图1：单策略（只取原始文件对应的 key，不含任何组合）
+    single_keys = [k for k in files if k in combos]
     plot_heatmaps(combos, single_keys,
                   f"{out_dir}/热力图_单策略月度收益.html",
                   "各单策略月度收益率热力图")
 
-    # 图2：各标的融合 + 跨标的组合
-    combo_keys = ["BTC融合", "ETH融合", "SOL融合", "DOGE融合",
-                  "ETH+SOL", "BTC+ETH+SOL", "全4标的"]
-    plot_heatmaps(combos, combo_keys,
-                  f"{out_dir}/热力图_组合月度收益.html",
-                  "各组合月度收益率热力图")
+    # 图2：所有组合（融合 + 两两 + 三标的 + 全组合），按组合层级排序
+    fusion_keys  = [k for k in combos if "融合" in k]
+    pair_keys    = [k for k in combos if k.count("+") == 1 and "融合" not in k]
+    triple_keys  = [k for k in combos if k.count("+") == 2 and "融合" not in k]
+    full_keys    = [k for k in combos if k in ("全4标的", "全版本等权")]
+    # 单标的模式：把所有版本等权也加进来（key 含 + 且覆盖全部版本）
+    n_versions   = len(files)
+    if n_versions >= 4:
+        full_keys += [k for k in combos if k.count("+") == n_versions - 1
+                      and k not in full_keys]
+    combo_keys   = fusion_keys + pair_keys + triple_keys + full_keys
+    combo_keys   = [k for k in combo_keys if k in combos]  # 过滤不存在的
+    if combo_keys:
+        plot_heatmaps(combos, combo_keys,
+                      f"{out_dir}/热力图_组合月度收益.html",
+                      "各组合月度收益率热力图")
 
 
 if __name__ == "__main__":

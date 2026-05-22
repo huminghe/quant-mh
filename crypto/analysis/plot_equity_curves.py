@@ -6,265 +6,51 @@ import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-BASE = '/Users/huminghe/Downloads/'
-
-FILES = {
-    'BTC': {
-        'ema':  'strategy_ema_btc_OKX_BTCUSDT.P_2026-05-18_bccdc.xlsx',
-        'v2':   'v2_strategy_btc_OKX_BTCUSDT.P_2026-05-18_89f2b.xlsx',
-        'v3':   'v3_205m_strategy_btc_OKX_BTCUSDT.P_2026-05-18_7f0bc.xlsx',
-    },
-    'ETH': {
-        'ema':  'strategy_ema_eth_OKX_ETHUSDT.P_2026-05-18_6d950.xlsx',
-        'v2':   'v2_strategy_eth_OKX_ETHUSDT.P_2026-05-18_7eba3.xlsx',
-        'v3':   'v3_3h_strategy_eth_OKX_ETHUSDT.P_2026-05-18_f84bb.xlsx',
-    },
-    'SOL': {
-        'ema':  'strategy_ema_sol_OKX_SOLUSDT.P_2026-05-18_f737f.xlsx',
-        'v2':   'v2_strategy_sol_OKX_SOLUSDT.P_2026-05-18_2c3a0.xlsx',
-        'v3':   'v3_3h_strategy_sol_OKX_SOLUSDT.P_2026-05-18_a51fb.xlsx',
-    },
-    'DOGE': {
-        'ema':  'strategy_ema_meme_OKX_DOGEUSDT.P_2026-05-18_3a4e0.xlsx',
-        'v2':   'v2_strategy_doge_OKX_DOGEUSDT.P_2026-05-18_2b9fa.xlsx',
-        'v3':   'v3_205m_strategy_doge_OKX_DOGEUSDT.P_2026-05-18_283df.xlsx',
-    },
-}
-
-ASSETS = ['BTC', 'ETH', 'SOL', 'DOGE']
-STRATS = ['ema', 'v2', 'v3']
-
 ASSET_COLORS = {
-    'BTC':  '#F7931A',
-    'ETH':  '#627EEA',
-    'SOL':  '#9945FF',
-    'DOGE': '#C2A633',
+    "BTC":  "#F7931A",
+    "ETH":  "#627EEA",
+    "SOL":  "#9945FF",
+    "DOGE": "#C2A633",
 }
+STRAT_DASH   = {"ema": "dot", "v2": "dash", "v3": "solid"}
+STRAT_LABELS = {"ema": "EMA", "v2": "V2",  "v3": "V3"}
 
-STRAT_DASH = {'ema': 'dot', 'v2': 'dash', 'v3': 'solid'}
-STRAT_LABELS = {'ema': 'EMA', 'v2': 'V2', 'v3': 'V3'}
 
 def read_equity_curve(filepath):
     wb = openpyxl.load_workbook(filepath, read_only=True)
-    ws = wb['交易清单']
+    ws = wb["交易清单"]
     points = []
     for r in ws.iter_rows(values_only=True):
-        if r[1] and '出场' in str(r[1]) and isinstance(r[2], datetime.datetime) and r[14] is not None:
+        if r[1] and "出场" in str(r[1]) and isinstance(r[2], datetime.datetime) and r[14] is not None:
             points.append((r[2], float(r[14])))
     wb.close()
     return sorted(points, key=lambda x: x[0])
 
-print("读取数据...")
-all_equity = {}
-for asset in ASSETS:
-    all_equity[asset] = {}
-    for strat in STRATS:
-        all_equity[asset][strat] = read_equity_curve(BASE + FILES[asset][strat])
-
-# 计算融合曲线
-all_dates_set = set()
-for asset in ASSETS:
-    for strat in STRATS:
-        for dt, _ in all_equity[asset][strat]:
-            all_dates_set.add(dt.date())
-all_dates = sorted(all_dates_set)
-
-def get_val_at(date_map, d):
-    best = None
-    for dd, v in sorted(date_map.items()):
-        if dd <= d:
-            best = v
-    return best or 0.0
-
-strat_date_map = {}
-for asset in ASSETS:
-    for strat in STRATS:
-        dm = {}
-        for dt, v in all_equity[asset][strat]:
-            d = dt.date() if isinstance(dt, datetime.datetime) else dt
-            dm[d] = v
-        strat_date_map[(asset, strat)] = dm
-
-merged_equity = {}
-for asset in ASSETS:
-    merged = []
-    for d in all_dates:
-        vals = [get_val_at(strat_date_map[(asset, strat)], d) for strat in STRATS]
-        merged.append((d, sum(vals) / len(vals)))
-    merged_equity[asset] = merged
-
-portfolio_equity = []
-for i, d in enumerate(all_dates):
-    avg = sum(merged_equity[asset][i][1] for asset in ASSETS) / len(ASSETS)
-    portfolio_equity.append((d, avg))
-
-print("生成图表...")
-
-# ─── 图1：各标的三策略对比（2x2子图）─────────────────────────────────────────
-fig1 = make_subplots(
-    rows=2, cols=2,
-    subplot_titles=[f'{a} — 三策略收益曲线' for a in ASSETS],
-    shared_xaxes=False,
-    vertical_spacing=0.12,
-    horizontal_spacing=0.08,
-)
-
-pos = {'BTC': (1,1), 'ETH': (1,2), 'SOL': (2,1), 'DOGE': (2,2)}
-
-for asset in ASSETS:
-    r, c = pos[asset]
-    base_color = ASSET_COLORS[asset]
-    for strat in STRATS:
-        pts = all_equity[asset][strat]
-        dates = [p[0] for p in pts]
-        vals  = [p[1] for p in pts]
-        fig1.add_trace(
-            go.Scatter(
-                x=dates, y=vals,
-                name=f'{asset} {STRAT_LABELS[strat]}',
-                line=dict(color=base_color, dash=STRAT_DASH[strat], width=1.5),
-                opacity=0.85,
-                showlegend=True,
-                legendgroup=asset,
-            ),
-            row=r, col=c,
-        )
-    # 融合曲线
-    m_dates = [p[0] for p in merged_equity[asset]]
-    m_vals  = [p[1] for p in merged_equity[asset]]
-    fig1.add_trace(
-        go.Scatter(
-            x=m_dates, y=m_vals,
-            name=f'{asset} 融合',
-            line=dict(color=base_color, dash='solid', width=3),
-            opacity=1.0,
-            showlegend=True,
-            legendgroup=asset,
-        ),
-        row=r, col=c,
-    )
-
-fig1.update_layout(
-    title=dict(text='各标的三策略收益走势对比（累计P&L %）', font=dict(size=16)),
-    height=900,
-    template='plotly_white',
-    hovermode='x unified',
-)
-for ax in fig1.layout:
-    if ax.startswith('yaxis'):
-        fig1.layout[ax].ticksuffix = '%'
-
-fig1.write_html(BASE + '图1_各标的策略对比.html')
-print("  图1 完成")
-
-# ─── 图2：各标的融合曲线 + 全组合 ─────────────────────────────────────────────
-fig2 = go.Figure()
-
-for asset in ASSETS:
-    m_dates = [p[0] for p in merged_equity[asset]]
-    m_vals  = [p[1] for p in merged_equity[asset]]
-    fig2.add_trace(go.Scatter(
-        x=m_dates, y=m_vals,
-        name=f'{asset} 融合',
-        line=dict(color=ASSET_COLORS[asset], width=2),
-    ))
-
-p_dates = [p[0] for p in portfolio_equity]
-p_vals  = [p[1] for p in portfolio_equity]
-fig2.add_trace(go.Scatter(
-    x=p_dates, y=p_vals,
-    name='全组合（4标的等权）',
-    line=dict(color='#2E75B6', width=3, dash='solid'),
-    fill='tozeroy',
-    fillcolor='rgba(46,117,182,0.08)',
-))
-
-fig2.update_layout(
-    title=dict(text='各标的融合策略 & 全组合收益走势（累计P&L %）', font=dict(size=16)),
-    height=550,
-    template='plotly_white',
-    hovermode='x unified',
-    yaxis=dict(ticksuffix='%'),
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-)
-fig2.write_html(BASE + '图2_融合策略与全组合.html')
-print("  图2 完成")
-
-# ─── 图3：各策略版本横向对比（按标的分组柱状图）─────────────────────────────
-import openpyxl as ox
 
 def read_stats(filepath):
-    wb = ox.load_workbook(filepath, read_only=True)
+    wb = openpyxl.load_workbook(filepath, read_only=True)
     stats = {}
-    for sheet_name in ['表现', '交易分析', '风险调整后的表现']:
+    for sheet_name in ["表现", "交易分析", "风险调整后的表现"]:
+        if sheet_name not in wb.sheetnames:
+            continue
         ws = wb[sheet_name]
         for row in ws.iter_rows(values_only=True):
             if row[0] is not None:
                 stats[row[0]] = {
-                    '全部USDT': row[1], '全部%': row[2],
-                    '多头USDT': row[3], '多头%': row[4],
-                    '空头USDT': row[5], '空头%': row[6],
+                    "全部USDT": row[1], "全部%": row[2],
+                    "多头USDT": row[3], "多头%": row[4],
+                    "空头USDT": row[5], "空头%": row[6],
                 }
     wb.close()
     return stats
 
-all_stats = {}
-for asset in ASSETS:
-    all_stats[asset] = {}
-    for strat in STRATS:
-        all_stats[asset][strat] = read_stats(BASE + FILES[asset][strat])
 
-def gk(stats, key, field='全部%', default=0):
+def gk(stats, key, field="全部%", default=0):
     return float(stats.get(key, {}).get(field) or default)
 
-fig3 = make_subplots(
-    rows=2, cols=2,
-    subplot_titles=['净利润 %', '夏普比率', '最大回撤 %', '盈利因子'],
-    vertical_spacing=0.18,
-    horizontal_spacing=0.1,
-)
 
-metric_configs = [
-    ('净利润 %',  '净利润',           '全部%',    (1,1)),
-    ('夏普比率',  '夏普比率',          '全部USDT', (1,2)),
-    ('最大回撤 %','最大股权回撤（intrabar）','全部%',(2,1)),
-    ('盈利因子',  '盈利因子',          '全部USDT', (2,2)),
-]
-
-strat_colors = {'ema': '#4472C4', 'v2': '#ED7D31', 'v3': '#70AD47'}
-
-for label, key, field, (r, c) in metric_configs:
-    for strat in STRATS:
-        y_vals = [gk(all_stats[asset][strat], key, field) for asset in ASSETS]
-        fig3.add_trace(
-            go.Bar(
-                name=STRAT_LABELS[strat],
-                x=ASSETS,
-                y=y_vals,
-                marker_color=strat_colors[strat],
-                showlegend=(r == 1 and c == 1),
-                legendgroup=strat,
-            ),
-            row=r, col=c,
-        )
-
-fig3.update_layout(
-    title=dict(text='各标的 × 各策略关键指标对比', font=dict(size=16)),
-    height=700,
-    template='plotly_white',
-    barmode='group',
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-)
-fig3.layout['yaxis'].ticksuffix = '%'
-fig3.layout['yaxis3'].ticksuffix = '%'
-
-fig3.write_html(BASE + '图3_关键指标柱状对比.html')
-print("  图3 完成")
-
-print(f"\n所有图表已保存到 {BASE}")
-print("  图1_各标的策略对比.html")
-print("  图2_融合策略与全组合.html")
-print("  图3_关键指标柱状对比.html")
+if __name__ == "__main__":
+    pass  # 直接运行时请调用 run()
 
 
 # ─── 供 run_analysis.py 调用的接口 ────────────────────────────────────────────
@@ -357,14 +143,14 @@ def run(files: dict, base: str, out_dir: str):
             _fig1.add_trace(go.Scatter(
                 x=dates, y=vals, name=f'{a} {s.upper()}',
                 line=dict(color=color, dash=STRAT_DASH.get(s, 'solid'), width=1.5),
-                opacity=0.85, legendgroup=a,
+                opacity=0.85, legendgroup=f'{a}_{s}',
             ), row=r, col=c)
         m_dates = _all_dates
         m_vals  = _merged[a]
         _fig1.add_trace(go.Scatter(
             x=m_dates, y=m_vals, name=f'{a} 融合',
             line=dict(color=color, width=3),
-            legendgroup=a,
+            legendgroup=f'{a}_融合',
         ), row=r, col=c)
     _fig1.update_layout(
         title=dict(text='各标的三策略收益走势对比（累计P&L %）', font=dict(size=16)),

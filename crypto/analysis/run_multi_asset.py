@@ -1,11 +1,12 @@
 """
-ETH 多版本策略分析入口
-自动扫描 Downloads 目录中所有 ETH 策略文件，无需手动维护版本列表。
+多标的多策略分析入口
+自动扫描 Downloads 目录，解析文件名推导标的和策略版本，无需手动维护匹配规则。
+
+支持任意版本命名，如 v7、v9_321m 等，新增策略无需改代码。
 
 用法：
-  python run_eth_versions.py
-  python run_eth_versions.py --dir ~/Downloads/ --out ~/Documents/.../crypto/analysis/
-  python run_eth_versions.py --llm          # 分析完自动生成 LLM 解读
+  python run_multi_asset.py
+  python run_multi_asset.py --dir ~/Downloads/ --out ~/Documents/.../crypto/analysis/
 """
 import argparse
 import os
@@ -16,7 +17,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from analysis_core import run_all, scan_files_auto
 
-TITLE = "ETH多版本策略分析"
+# 排除项：key 在此集合中的文件会被跳过
+EXCLUDE = {"DOGE_ema"}  # 回撤过大，默认排除
+
+TITLE = "多标的策略分析"
 
 
 def main():
@@ -28,22 +32,20 @@ def main():
                         help="输出根目录")
     parser.add_argument("--window", type=int, default=12,
                         help="滚动窗口月数（默认 12）")
-    parser.add_argument("--llm", action="store_true",
-                        help="分析完自动生成 LLM 解读")
     args = parser.parse_args()
 
     print(f"扫描目录: {args.dir}")
-    files = scan_files_auto(args.dir, asset="ETH")
+    files = scan_files_auto(args.dir, exclude=EXCLUDE)
 
     if not files:
-        print("未找到任何 ETH 版本文件，请检查 --dir 路径。")
+        print("未找到匹配的 xlsx 文件，请检查 --dir 路径或文件命名。")
         sys.exit(1)
 
     print(f"找到 {len(files)} 个策略文件：")
     for k, v in sorted(files.items()):
         print(f"  {k}: {Path(v).name}")
 
-    run_all(files, title=TITLE, out_base=args.out, window=args.window, llm=args.llm)
+    run_all(files, title=TITLE, out_base=args.out, window=args.window)
 
 
 if __name__ == "__main__":

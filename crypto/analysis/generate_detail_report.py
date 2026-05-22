@@ -259,7 +259,7 @@ def run(files: dict[str, str], base: str, out_dir: str, date_str: str = None):
     # ═══════════════════════════════════════════════════════════════════════════════
     ws2 = wb.create_sheet('滚动12个月分析')
 
-    ROLL_KEYS = list(FILES.keys()) + list(available_combos.keys())
+    ROLL_KEYS = ALL_KEYS
     ROLL_METRICS = ['夏普', '最大回撤%', '月胜率%']
 
     # 标题
@@ -355,9 +355,8 @@ def run(files: dict[str, str], base: str, out_dir: str, date_str: str = None):
     # ═══════════════════════════════════════════════════════════════════════════════
     ws3 = wb.create_sheet('月度收益明细')
 
-    SHOW_KEYS = (list(FILES.keys()) +
-                 ['BTC融合','ETH融合','SOL融合','DOGE融合'] +
-                 [k for k in available_combos if '融合' not in k])
+    SHOW_KEYS = (list(files.keys()) +
+                 [k for k in available_combos if k not in files])
 
     # 收集所有年月
     all_ym = set()

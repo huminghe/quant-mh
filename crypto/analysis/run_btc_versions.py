@@ -1,11 +1,11 @@
 """
-ETH 多版本策略分析入口
-自动扫描 Downloads 目录中所有 ETH 策略文件，无需手动维护版本列表。
+BTC 多版本策略分析入口
+自动扫描 Downloads 目录中所有 BTC 策略文件，无需手动维护版本列表。
 
 用法：
-  python run_eth_versions.py
-  python run_eth_versions.py --dir ~/Downloads/ --out ~/Documents/.../crypto/analysis/
-  python run_eth_versions.py --llm          # 分析完自动生成 LLM 解读
+  python run_btc_versions.py
+  python run_btc_versions.py --dir ~/Downloads/ --out ~/Documents/.../crypto/analysis/
+  python run_btc_versions.py --llm          # 分析完自动生成 LLM 解读
 """
 import argparse
 import os
@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from analysis_core import run_all, scan_files_auto
 
-TITLE = "ETH多版本策略分析"
+TITLE = "BTC多版本策略分析"
 
 
 def main():
@@ -33,10 +33,10 @@ def main():
     args = parser.parse_args()
 
     print(f"扫描目录: {args.dir}")
-    files = scan_files_auto(args.dir, asset="ETH")
+    files = scan_files_auto(args.dir, asset="BTC")
 
     if not files:
-        print("未找到任何 ETH 版本文件，请检查 --dir 路径。")
+        print("未找到任何 BTC 版本文件，请检查 --dir 路径。")
         sys.exit(1)
 
     print(f"找到 {len(files)} 个策略文件：")
