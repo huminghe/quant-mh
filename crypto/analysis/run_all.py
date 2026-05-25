@@ -4,10 +4,13 @@
 用法：
   python run_all.py
   python run_all.py --llm          # 分析完自动生成 LLM 解读
+  python run_all.py --health       # 分析完自动生成健康度报告
+  python run_all.py --llm --health # 同时生成 LLM 解读和健康度报告
   python run_all.py --dir ~/Downloads/ --out ~/Documents/.../crypto/analysis/
 """
 import argparse
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -35,6 +38,8 @@ def main():
                         help="滚动窗口月数（默认 12）")
     parser.add_argument("--llm", action="store_true",
                         help="分析完自动生成 LLM 解读")
+    parser.add_argument("--health", action="store_true",
+                        help="分析完自动生成健康度报告")
     args = parser.parse_args()
 
     out_dirs = []
@@ -58,6 +63,15 @@ def main():
     print(f"全部分析完成！共 {len(out_dirs)} 个")
     for title, d in out_dirs:
         print(f"  {title}: {d}")
+
+    # 生成健康度报告（基于多标的分析结论）
+    if args.health and out_dirs:
+        print(f"\n{'='*60}")
+        print("  生成健康度报告")
+        print(f"{'='*60}")
+        health_script = Path(__file__).parent / "health_report.py"
+        subprocess.run([sys.executable, str(health_script), "--latest",
+                        "--base-dir", args.out], check=False)
 
 
 if __name__ == "__main__":

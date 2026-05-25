@@ -393,3 +393,48 @@ for check, passed in checks.items():
 print("\n" + "=" * 60)
 print("回测完成！")
 print("=" * 60)
+
+# ============================================================================
+# 11. 导出回测结果 JSON（供 backtest_analyst.py 使用）
+# ============================================================================
+
+import json
+from pathlib import Path
+
+results = {
+    "strategy": {
+        "name": "20日短期反转策略",
+        "universe": "沪深300成分股",
+        "lookback_period": LOOKBACK_PERIOD,
+        "quantile_threshold": QUANTILE_THRESHOLD,
+        "rebalance_freq": REBALANCE_FREQ,
+        "fees": FEES,
+        "start_date": START_DATE,
+        "end_date": END_DATE,
+    },
+    "performance": {
+        "total_return_pct": round(total_return, 2),
+        "annual_return_pct": round(annual_return, 2),
+        "sharpe_ratio": round(sharpe_ratio, 3),
+        "max_drawdown_pct": round(max_drawdown, 2),
+        "win_rate_pct": round(win_rate, 2),
+        "total_trades": int(total_trades),
+    },
+    "benchmark": {
+        "name": "沪深300",
+        "total_return_pct": round(benchmark_total_return, 2),
+        "annual_return_pct": round(benchmark_annual_return, 2),
+        "excess_return_pct": round(total_return - benchmark_total_return, 2),
+    },
+    "factor": {
+        "ic_mean": round(ic_mean, 4),
+        "ic_std": round(ic_std, 4),
+        "ic_ir": round(ic_ir, 4),
+        "ic_positive_rate_pct": round((ic_series > 0).mean() * 100, 1),
+    },
+    "checks": {k: bool(v) for k, v in checks.items()},
+}
+
+out_path = Path(__file__).parent / "reversal_20d_hs300_results.json"
+out_path.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+print(f"\n回测结果已导出：{out_path}")

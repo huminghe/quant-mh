@@ -53,6 +53,12 @@ case "$1" in
         rss_call "rss_daily_digest" "{\"format\":\"markdown\",\"days\":$days}"
         ;;
 
+    digest-ai)
+        days=${2:-1}
+        echo "🤖 生成 AI 摘要日报（最近 $days 天）..."
+        python3 "$(dirname "$0")/daily_digest.py" --days "$days"
+        ;;
+
     add)
         if [ -z "$2" ] || [ -z "$3" ]; then
             echo "用法: $0 add <URL> <名称> [分类]"
@@ -89,6 +95,7 @@ RSS MCP 便捷工具
   trends [天数]        趋势分析（默认 7 天）
   stats               统计信息
   digest [天数]        生成摘要（默认 1 天）
+  digest-ai [天数]     生成 AI 中文摘要日报，输出到 shared/daily_digest/（默认 1 天）
   add <URL> <名称> [分类]  添加新订阅
   bookmark list       列出书签
   bookmark add <ID>   添加书签
