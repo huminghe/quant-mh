@@ -32,7 +32,7 @@ def main():
     parser.add_argument("--dir", default=os.path.expanduser("~/Downloads/"),
                         help="xlsx 文件所在目录（默认 ~/Downloads/）")
     parser.add_argument("--out", default=os.path.expanduser(
-                            "~/Documents/projects/quant-mh/crypto/analysis/"),
+                            "~/Documents/projects/quant-mh/crypto/analysis/reports/"),
                         help="输出根目录")
     parser.add_argument("--window", type=int, default=12,
                         help="滚动窗口月数（默认 12）")

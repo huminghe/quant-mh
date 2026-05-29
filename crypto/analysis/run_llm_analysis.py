@@ -137,7 +137,7 @@ def main():
     parser.add_argument("--latest", action="store_true",
                         help="自动找最新的结论文件")
     parser.add_argument("--base-dir", default=os.path.expanduser(
-                            "~/Documents/projects/quant-mh/crypto/analysis/"),
+                            "~/Documents/projects/quant-mh/crypto/analysis/reports/"),
                         help="charts 目录的父目录")
     args = parser.parse_args()
 

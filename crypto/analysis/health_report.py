@@ -210,7 +210,7 @@ def run_health_report(strategy_data: str, source_desc: str, out_dir: Path) -> Pa
 # ─── 入口 ─────────────────────────────────────────────────────────────────────
 
 def main():
-    base_dir = os.path.expanduser("~/Documents/projects/quant-mh/crypto/analysis/")
+    base_dir = os.path.expanduser("~/Documents/projects/quant-mh/crypto/analysis/reports/")
 
     parser = argparse.ArgumentParser(description="策略健康度 Agent 日报")
     parser.add_argument("path", nargs="?", help="结论 MD 文件路径（可选）")

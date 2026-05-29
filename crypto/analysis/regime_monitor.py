@@ -335,7 +335,7 @@ def save_report(regime: pd.Series, stats: dict, current: str, streak: int,
 # ─── 入口 ─────────────────────────────────────────────────────────────────────
 
 def main():
-    base_dir = Path(__file__).parent
+    base_dir = Path(__file__).parent / "reports"
 
     parser = argparse.ArgumentParser(description="HMM 市场制度监控")
     parser.add_argument("--days", type=int, default=DEFAULT_DAYS,

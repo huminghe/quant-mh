@@ -12,6 +12,13 @@
 
 分析脚本保存到 `analysis/`，不只放 `/tmp`。命名规范：`{主题}_{功能}.py`。
 
+**目录分工：**
+- `analysis/`（根目录）：只放活跃脚本（常用入口、核心库、仍在迭代的分析）
+- `analysis/archive/`：已完结的验证脚本（结论已固化进 memory 或 research_log），保留不删除
+- `analysis/reports/`：所有生成产物（`charts_*/`、`health_report_*.md`、`regime_monitor_*`），不提交 git
+
+**判断"已完结"的标准：** 该脚本验证的结论已写入 `docs/strategy_research_log.md` 或 `docs/filters_validation.md`，且不需要再次运行。
+
 ## 研究日志
 
 研究结论追加到 `docs/strategy_research_log.md`，**IMPORTANT：使用 `docs/research_workflow.md` 中定义的完整格式**（含数据范围、测试规模、参数选择理由、过拟合风险、样本外验证、排除的方向）。
@@ -31,6 +38,9 @@
 - 框架类（理论、改进方向，很少改动）→ 独立文档，如 `trend_following_research.md`
 - 实验流水账（过程、数据、初步发现，持续追加）→ 研究日志
 - 高频查阅的结论索引（测了 10+ 个指标、需要快速查参数）→ 独立索引文档，如 `filters_validation.md`
+- 已完结/已过期的文档 → `docs/archive/`
+
+**判断"已完结"的标准：** 该文档描述的决策已执行、结论已固化进其他文档，或已被更新版本取代（顶部有"已由 X 取代"标注）。
 
 **单个指标验证结论追加到研究日志即可，不需要单独建文档。**
 
