@@ -113,4 +113,4 @@ with open('/tmp/research_progress.txt', 'a') as f:
 
 本规范的第一个完整案例：CI 过滤研究（2026-05-27），见 `docs/strategy_research_log.md` 中"2026-05-27｜Choppiness Index 入场过滤系统性验证"条目。该条目包含完整的数据范围、测试规模、参数选择理由、过拟合风险评估和样本外说明。
 
-注：CI 已被 ER 超越（2025 年 CI 失效，ER 仍有效），最新结论见 `docs/filters_validation.md`。
+注：CI 和 ER 均因时区错误（UTC vs UTC+8）结论作废，修正后全部负向。最新结论见 `docs/filters_validation.md`。
