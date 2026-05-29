@@ -1,6 +1,10 @@
 # 策略健康度监控
 
-最后更新：2026-05-13（策略组合分析见 strategy_combination_analysis.md）
+最后更新：2026-05-13
+
+> **与 `pause_mechanism.md` 的关系**：本文档是**月度健康度监控**（滚动盈亏比/胜率，判断策略是否系统性退化），`pause_mechanism.md` 是**事件驱动的短期暂停机制**（大跌+高波动触发）。两者互补，不是替代关系。
+>
+> **标的状态更新**：LINK/ARB/LDO 已确认停止运行（减仓中）；ADA/PEPE 减仓中。最新标的决策见 `token_selection_framework.md`，多标的组合分析见 `multi_asset_combination_analysis.md`（2026-05-22 更新）。
 
 ## 监控频率
 

@@ -25,6 +25,15 @@
 3. **标注已有文件的局限性**：如果本次研究发现某个已有脚本或文档有问题，在原文件里直接标注，不能只记在日志里。
 4. **更新"明确不做"列表**：如果得出"这个方向不值得做"的结论，追加到 `project_crypto_optimization_roadmap.md` 的"明确不做"表格。
 
+## 文档组织原则
+
+**按稳定程度分文件，不按研究深度分文件：**
+- 框架类（理论、改进方向，很少改动）→ 独立文档，如 `trend_following_research.md`
+- 实验流水账（过程、数据、初步发现，持续追加）→ 研究日志
+- 高频查阅的结论索引（测了 10+ 个指标、需要快速查参数）→ 独立索引文档，如 `filters_validation.md`
+
+**单个指标验证结论追加到研究日志即可，不需要单独建文档。**
+
 ## 回撤计算
 
 使用固定资本分母（如每标的 20000 USDT），不用峰值百分比；计算前先说明方法。
@@ -33,5 +42,6 @@
 
 - 暂停机制：`docs/pause_mechanism.md`
 - 健康度监控：`docs/health_monitor.md`
-- 趋势跟踪研究：`docs/trend_following_research.md`
+- 趋势跟踪研究框架：`docs/trend_following_research.md`
+- 过滤器验证结论索引：`docs/filters_validation.md`
 - 研究工作流规范：`docs/research_workflow.md`
