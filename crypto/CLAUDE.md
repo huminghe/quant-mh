@@ -25,12 +25,13 @@
 
 ## 研究总结检查清单
 
-用户说"总结"或"更新文档"时，按顺序执行以下4项，全部完成后再汇报：
+用户说"总结"或"更新文档"时，按顺序执行以下5项，全部完成后再汇报：
 
 1. **保存 /tmp 脚本**：检查 `/tmp/*.py`，把有独立分析价值的最终版本复制到 `analysis/`，加上结论性注释头。中间调试版本（命名带 debug/entry2/fix 等）不用保存。
 2. **写研究日志**：有实质结论的研究追加到 `docs/strategy_research_log.md`。
 3. **标注已有文件的局限性**：如果本次研究发现某个已有脚本或文档有问题，在原文件里直接标注，不能只记在日志里。
-4. **更新"明确不做"列表**：如果得出"这个方向不值得做"的结论，追加到 `project_crypto_optimization_roadmap.md` 的"明确不做"表格。
+4. **更新"明确不做"列表**：如果得出"这个方向不值得做"的结论，追加到 `docs/filters_validation.md` 的快速索引表。
+5. **更新 memory 文件**：如果有新的结论或决策，更新对应的 memory 文件（有 docs 对应的只更新指针摘要，无对应的更新实质内容）。
 
 ## 文档组织原则
 
@@ -58,6 +59,21 @@
 
 使用固定资本分母（如每标的 20000 USDT），不用峰值百分比；计算前先说明方法。
 
+## 策略版本命名规范
+
+| 标的 | 文件命名 | 时间框架 | 说明 |
+|------|---------|---------|------|
+| ETH | ETH_ema | 479m | 基础 EMA 策略 |
+| ETH | ETH_v2 | 479m | 改进版，夏普最高 |
+| ETH | ETH_v3_205m | 205m | 205分钟，**只跑这个，不跑 v3_3h**（两者相关性 0.935） |
+| ETH | ETH_v3_3h | 3h | 与 v3_205m 高度相关，不同时运行 |
+| SOL | SOL_ema | 479m | 基础版本 |
+| SOL | SOL_v2 | 479m | 改进趋势，夏普最高 |
+| SOL | SOL_v3_205m | 205m | 与其他策略零相关，核心策略 |
+| SOL | SOL_v5_3h | 3h | 与 ema/v2 中度相关 |
+
+**注意：** SOL 的 v3 是 205m（不是 3h），与 ETH 版本命名不对应。历史记录中曾称 205m 版本为"V4"，当前脚本统一命名为 `v3_205m`。
+
 ## 参考文档
 
 - 暂停机制：`docs/pause_mechanism.md`
@@ -65,3 +81,8 @@
 - 趋势跟踪研究框架：`docs/trend_following_research.md`
 - 过滤器验证结论索引：`docs/filters_validation.md`
 - 研究工作流规范：`docs/research_workflow.md`
+- 策略版本性能对比：`docs/strategy_versions.md`
+- 交易量数据可靠性调研：`docs/volume_research.md`
+- 小币调研结论：`docs/small_token_research.md`
+- 七标的深度配置对比（2026-05）：`docs/portfolio_research_2026.md`
+- 停止运行决策（LINK/ARB/LDO）：`docs/stop_decision_link_arb_ldo.md`

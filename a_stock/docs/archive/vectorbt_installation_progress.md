@@ -1,5 +1,7 @@
 # VectorBT 安装进度
 
+> **已归档（2026-06-01）**：VectorBT 因 LLVM 依赖复杂度高，当前阶段改用简单回测方案。详见 memory/feedback_vectorbt_installation.md。
+
 ## 已完成 ✅
 
 1. ✅ LLVM 安装完成（22.1.4）

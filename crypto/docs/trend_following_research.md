@@ -79,45 +79,13 @@ CTA 行业标准做法，Winton 最早系统化使用：
 
 这不是参数问题，是策略结构决定的。**入场过滤器方向不再测试。**
 
-### 3. KAMA 自适应均线
+### 3. KAMA 自适应均线 — 已验证放弃（2026-06-01）
 
-Pine Script 无内置函数，需手动实现（代码见下方）。
-
-**核心机制：效率比（ER）动态调整平滑系数**
-
-```
-ER = |当前价格 - N日前价格| / Σ|每日价格变化|
-```
-
-- ER 接近 1（强趋势）→ 均线快速跟随
-- ER 接近 0（震荡）→ 均线几乎静止
-
-BTC 回测：whipsaw 率从 38% 降到 14%，利润因子从 1.21 提升到 1.48。
-
-**Pine Script 实现：**
-
-```pine
-//@version=5
-indicator("KAMA", overlay=true)
-
-length = input.int(10, "回望期")
-fast   = input.int(2,  "快速EMA周期")
-slow   = input.int(30, "慢速EMA周期")
-
-fast_sc = 2.0 / (fast + 1)
-slow_sc = 2.0 / (slow + 1)
-
-direction  = math.abs(close - close[length])
-volatility = math.sum(math.abs(close - close[1]), length)
-er         = volatility != 0 ? direction / volatility : 0
-
-sc = math.pow(er * (fast_sc - slow_sc) + slow_sc, 2)
-
-var float kama = na
-kama := na(kama[1]) ? close : kama[1] + sc * (close - kama[1])
-
-plot(kama, color=color.blue, linewidth=2)
-```
+> ⚠️ 双线差值方向信号下结构性失效，TV 实测 Sharpe 0.456→0.082，不是参数问题。
+>
+> **根本原因：** 快慢线 ER 来自同一价格序列，震荡后两线同步冻结再同步启动，差值扩大能力受 ER 同步性制约而非趋势强度决定。Kaufman 原著推荐单线斜率信号，不是双线差值。
+>
+> 之前"BTC 回测 whipsaw 率 38%→14%"数据来自单线信号，不适用于双线差值场景。
 
 ### 4. 多资产分散
 
@@ -171,6 +139,6 @@ plot(kama, color=color.blue, linewidth=2)
 | 健康度监控 | 滚动 Sharpe / IC 连续为负触发审查 |
 | 30 个标的 | 多资产分散 |
 
-待实现：ATR 动态定仓（优先级最高）、KAMA 替换现有均线。
+待实现：出场优化（当前最高优先级，具体方向待确认）。
 
 验证结论详见 `docs/filters_validation.md`。

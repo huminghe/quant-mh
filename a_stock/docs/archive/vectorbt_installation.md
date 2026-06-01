@@ -1,5 +1,7 @@
 # VectorBT 安装指南
 
+> **已归档（2026-06-01）**：VectorBT 因 LLVM 依赖复杂度高，当前阶段改用简单回测方案。详见 `docs/vectorbt_alternatives.md`。
+
 ## 安装步骤
 
 ### 1. 安装 LLVM（正在进行中...）
