@@ -32,7 +32,7 @@
 
 **过拟合风险：** 不适用（结论为"全部无效"）
 
-**排除的方向：** HMM 制度识别（含2状态/3状态/所有训练窗口变体）；所有入场过滤器方向已彻底穷尽（11类指标/变体，200+组参数）
+**排除的方向：** HMM 制度识别（含2状态/3状态/所有训练窗口变体）；所有入场过滤器方向已彻底穷尽（12类指标/变体，200+组参数）
 
 **脚本：** `analysis/archive/hmm_regime_filter_validation.py`
 
@@ -248,11 +248,11 @@
 
 **排除的方向：** 2H CE（止损太敏感，全面变差）；4H CE（IS 负向，可信度不足）；小 k 值（k≤2.0 平均 Sharpe 低于基准）
 
-**脚本：** `analysis/chandelier_exit_validation.py`、`analysis/chandelier_exit_oos.py`、`analysis/chandelier_exit_tf_compare.py`
+**脚本：** `analysis/archive/chandelier_exit_validation.py`、`analysis/archive/chandelier_exit_oos.py`、`analysis/archive/chandelier_exit_tf_compare.py`
 
 **Pine Script：** `crypto/chandelier_exit.pine`（参数 ce=20, atr=20, k=3.5，叠加到现有出场逻辑，先到先得）
 
-**下一步：** 集成到实盘策略，观察实际触发频率（回测约 10%）
+**下一步：** ~~集成到实盘策略，观察实际触发频率（回测约 10%）~~ （已完成，Pine Script 已上线）
 
 ---
 
@@ -316,7 +316,7 @@
 - 各标的最优时间周期不同：SOL/ETH 偏好 8h/1d（波动率变化慢），BTC 偏好 8h，DOGE 偏好 2h
 - DOGE 单标的回撤异常大（v1 -221.7%），是策略本身质量问题，非定仓造成
 
-**下一步：** Pine Script 实现，在 BTC/ETH/SOL 三标的灰度上线 2 周，观察均值仓位和回撤变化后全量推广。
+**下一步：** ~~Pine Script 实现，在 BTC/ETH/SOL 三标的灰度上线 2 周，观察均值仓位和回撤变化后全量推广。~~ （已完成，Pine Script 已上线）
 
 ---
 
