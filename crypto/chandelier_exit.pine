@@ -1,0 +1,43 @@
+// Chandelier Exit 出场止损
+// 验证结论：8H 框架，ce=20, atr=20, k=3.5（IS+OOS 均正向，Top5 稳健 5/5）
+// 用法：将 long_stop / short_stop 接入现有策略的出场逻辑
+//       多头持仓：close < long_stop  → 触发出场
+//       空头持仓：close > short_stop → 触发出场
+
+//@version=6
+indicator("Chandelier Exit", overlay=true)
+
+// ─── 参数 ───────────────────────────────────────────────────────────────────
+ce_period  = input.int(20,  "CE Period（最高/最低价回望）", minval=1)
+atr_period = input.int(20,  "ATR Period",                   minval=1)
+k          = input.float(3.5, "ATR 乘数 k",                 minval=0.1, step=0.1)
+
+// ─── 计算 ───────────────────────────────────────────────────────────────────
+atr        = ta.atr(atr_period)
+long_stop  = ta.highest(high, ce_period) - k * atr   // 多头追踪止损线
+short_stop = ta.lowest(low,   ce_period) + k * atr   // 空头追踪止损线
+
+// ─── 出场条件 ────────────────────────────────────────────────────────────────
+long_exit  = close < long_stop    // 多头出场信号
+short_exit = close > short_stop   // 空头出场信号
+
+// ─── 绘图 ───────────────────────────────────────────────────────────────────
+plot(long_stop,  "Long Stop",  color=color.new(color.red,   20), linewidth=2)
+plot(short_stop, "Short Stop", color=color.new(color.green, 20), linewidth=2)
+
+plotshape(long_exit,  title="多头出场", location=location.abovebar,
+          style=shape.triangledown, color=color.red,   size=size.small)
+plotshape(short_exit, title="空头出场", location=location.belowbar,
+          style=shape.triangleup,   color=color.green, size=size.small)
+
+// ─── 策略接入示例（strategy 版本中使用）────────────────────────────────────
+// 在现有策略脚本中，将以下两行加入出场逻辑：
+//
+//   ce_long_stop  = ta.highest(high, 20) - 3.5 * ta.atr(20)
+//   ce_short_stop = ta.lowest(low,   20) + 3.5 * ta.atr(20)
+//
+//   // 叠加到原有出场条件（先到先得）：
+//   if strategy.position_size > 0 and close < ce_long_stop
+//       strategy.close("Long", comment="CE Exit")
+//   if strategy.position_size < 0 and close > ce_short_stop
+//       strategy.close("Short", comment="CE Exit")
