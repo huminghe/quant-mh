@@ -1,0 +1,74 @@
+// 资金费率空头方向过滤
+// 验证结论：FR_MA7 > 0 才允许做空（IS+0.132 / OOS+0.511，4标的全部正向，空头保留率~90%）
+// 原理：FR < 0 时做空付费且隐含逼空风险；FR > 0 时多头付费给空头，方向非对称有利于空头
+// 数据来源：BINANCE:XXXXUSDT_PREMIUM（溢价指数），正溢价 ↔ 正资金费率
+//
+// 用法：在现有策略脚本空头开仓条件中加入 `and fr_ma7 > 0`
+//
+// ⚠️ 注意事项：
+//   1. 此过滤仅作用于空头开仓，不影响多头开仓和任何出场逻辑
+//   2. _PREMIUM 是 Binance 溢价指数（MARK - INDEX），与资金费率方向一致但数值不同
+//   3. Binance 8H 结算：00:00/08:00/16:00 UTC，此脚本用8H级别计算 MA7
+
+//@version=6
+indicator("Funding Rate Short Filter (Premium Proxy)", overlay=false)
+
+// ─── 参数 ───────────────────────────────────────────────────────────────────
+fr_period = input.int(7, "MA 周期（期数）", minval=1, maxval=20,
+    tooltip="取最近 N 期溢价指数均值；验证结论基于 N=7，对应 7×8h=56小时")
+
+use_premium = input.bool(true, "使用溢价指数代理（false=使用图表本身收盘价）",
+    tooltip="true：用 BINANCE:XXXXUSDT_PREMIUM 数据；false：仅供调试")
+
+// ─── 资金费率代理数据获取 ─────────────────────────────────────────────────────
+// TradingView 不提供直接的资金费率字段，用溢价指数（_PREMIUM）作代理：
+//   溢价指数 = (标记价格 - 现货指数价格) / 现货指数价格
+//   资金费率 = TWAP(溢价指数, 8h) + clamp(利率 - 溢价指数, -0.05%, 0.05%)
+//   方向完全一致：溢价指数 > 0 ↔ 资金费率 > 0
+
+// 构造当前标的的溢价指数 ticker（适用于 BINANCE USDT 永续合约）
+premium_ticker = "BINANCE:" + syminfo.basecurrency + "USDT_PREMIUM"
+
+// 用 8H 周期拉取溢价指数（对齐 Binance 结算周期）
+premium_8h = request.security(
+    use_premium ? premium_ticker : syminfo.tickerid,
+    "480",   // 480分钟 = 8小时
+    close,
+    barmerge.gaps_on,
+    barmerge.lookahead_off)
+
+// ─── FR MA7 计算 ──────────────────────────────────────────────────────────────
+fr_ma7 = ta.sma(premium_8h, fr_period)
+
+// ─── 过滤条件 ────────────────────────────────────────────────────────────────
+allow_short = fr_ma7 > 0   // 空头开仓条件：近7期溢价指数均值为正
+
+// ─── 绘图（供调试验证用）────────────────────────────────────────────────────
+plot(fr_ma7 * 10000,     "FR MA7 (×1e4)", color=color.new(color.orange, 0), linewidth=2)
+plot(premium_8h * 10000, "Premium 8H (×1e4)", color=color.new(color.gray, 50), linewidth=1)
+hline(0, "Zero Line", color=color.white, linestyle=hline.style_dashed)
+
+bgcolor(allow_short ? color.new(color.green, 90) : color.new(color.red, 90),
+    title="允许做空背景（绿=允许/红=屏蔽）")
+
+// ─── 策略接入方式 ────────────────────────────────────────────────────────────
+//
+// 将以下代码块添加到现有策略脚本（直接嵌入，无需单独加载本脚本）：
+//
+//   // ── 资金费率空头过滤 ────────────────────────────────────────────────────
+//   _premium = request.security(
+//       "BINANCE:" + syminfo.basecurrency + "USDT_PREMIUM",
+//       "480", close, barmerge.gaps_on, barmerge.lookahead_off)
+//   fr_ma7   = ta.sma(_premium, 7)
+//   // 空头开仓条件加入：and fr_ma7 > 0
+//   // ────────────────────────────────────────────────────────────────────────
+//
+// 修改空头入场逻辑示例：
+//
+//   // 修改前：
+//   if diff < 0 and diff[1] >= 0
+//       strategy.entry("Short", strategy.short, qty=short_qty)
+//
+//   // 修改后：
+//   if diff < 0 and diff[1] >= 0 and fr_ma7 > 0
+//       strategy.entry("Short", strategy.short, qty=short_qty)
