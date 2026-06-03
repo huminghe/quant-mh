@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 三种市场制度识别方案对比（2026-05-27）
 
 方案A：规则投票（BTC MA200 + ADX + ATR百分位 + 资金费率）

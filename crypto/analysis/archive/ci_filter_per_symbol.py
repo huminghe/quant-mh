@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 CI(10) 2H ≤50 入场过滤效果验证
 - 按标的分别展示：基准PnL、过滤后PnL、胜率对比、年度分解
 - 支持 v1/v2/v3_205m/v3_3h 等多个策略版本

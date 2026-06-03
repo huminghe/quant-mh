@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 规则投票方案A 阈值优化分析（2026-05-27）
 
 1. 各信号单独的区分度（MA200/ADX/ATR百分位/VolZ）

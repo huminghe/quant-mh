@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ADX 出场优化验证（2026-06-03）
 
 验证在持仓中途检测到 ADX 弱化时提前出场，是否能改善策略表现。

@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ADX 入场过滤 + 成交量确认 验证（2026-05-29）
 
 验证内容：

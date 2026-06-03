@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ER 过滤深度验证（2026-05-27）
 
 1. 年度稳定性：ER≥0.3 vs CI≤50，逐年对比，看是否每年都正向

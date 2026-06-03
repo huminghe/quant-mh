@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ADX 出场优化验证 v2 — 静态条件 vs 动态条件 单独验证（2026-06-04）
 
 背景：

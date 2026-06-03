@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 Hurst 指数入场过滤验证（2026-05-27）
 
 用 DFA（去趋势波动分析）计算 Hurst 指数：

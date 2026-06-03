@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 资金费率入场过滤验证（2026-05-29）
 
 验证资金费率作为入场过滤器的效果，测试三种逻辑：

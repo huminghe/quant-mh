@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 Efficiency Ratio (ER) 入场过滤验证（2026-05-27）
 
 ER = |Close - Close[N]| / Σ|Close[i] - Close[i-1]|

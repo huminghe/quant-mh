@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 制度过滤指标验证（2026-05-27）
 
 对比盈利 vs 亏损交易在入场时的8个市场指标，验证是否有预测能力。

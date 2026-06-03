@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 CI 参数扫描：N(7/10/14/20) × 阈值(45/50/55) × 时间框架(30m/1h/2h)
 支持多个策略版本，输出每个标的的最优配置
 """

@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 Chandelier Exit ATR 乘数自适应验证（2026-06-03）
 
 验证：把 CE 的固定 k=3.5 换成根据入场时 ATR 百分位动态变化的 k，

@@ -1,5 +1,7 @@
 # 多策略并行部署：决策与注意事项
 
+> **ARCHIVED**：决策已执行，结论摘要见 memory `project_multi_strategy_switch.md`。
+
 最后更新：2026-05-22
 
 ## 背景

@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 Chandelier Exit 样本外验证（2026-06-03）
 
 基于 chandelier_exit_validation.py 的结果，做 IS/OOS 分割验证。

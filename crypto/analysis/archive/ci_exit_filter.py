@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 CI 出场过滤验证（2026-05-27）
 
 模拟：持仓期间如果 2H CI 超过阈值，在该 K 线收盘提前出场。

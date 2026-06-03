@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ACF（自相关系数）入场过滤验证 — 时区修正版（2026-05-29）
 
 原脚本（acf_filter_validation.py）存在时区错误：

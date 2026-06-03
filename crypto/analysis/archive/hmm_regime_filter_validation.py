@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 HMM 制度识别入场过滤验证（2026-06-03）
 
 验证：用隐马尔可夫模型（HMM）识别市场制度（趋势/震荡），

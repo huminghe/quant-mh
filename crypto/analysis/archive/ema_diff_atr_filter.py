@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 EMA 差值 ATR 阈值过滤验证（2026-06-01）【已完结，结论：无效】
 
 结论：

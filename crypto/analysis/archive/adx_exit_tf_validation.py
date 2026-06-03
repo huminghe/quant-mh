@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ADX 出场优化验证 v3 — 多时间框架（2026-06-04）
 
 背景：

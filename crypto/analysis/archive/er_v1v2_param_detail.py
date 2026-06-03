@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ER 过滤器 v1/v2 参数细化对比（2026-05-29）
 
 对比：

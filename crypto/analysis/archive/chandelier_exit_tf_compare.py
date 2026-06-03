@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 Chandelier Exit 多时间框架对比验证（2026-06-03）
 
 在 2H / 4H / 8H 三个 OHLCV 时间框架上分别计算 CE 止损线，

@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ADX 过滤信号验证（2026-05-27）
 
 验证 ADX 在4个维度（自身8H / BTC 8H / 自身日线 / BTC日线）对4个策略

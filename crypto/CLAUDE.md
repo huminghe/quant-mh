@@ -31,7 +31,7 @@
 2. **写研究日志**：有实质结论的研究追加到 `docs/strategy_research_log.md`。
 3. **标注已有文件的局限性**：如果本次研究发现某个已有脚本或文档有问题，在原文件里直接标注，不能只记在日志里。
 4. **更新"明确不做"列表**：如果得出"这个方向不值得做"的结论，追加到 `docs/filters_validation.md` 的快速索引表。
-5. **更新 memory 文件**：如果有新的结论或决策，更新对应的 memory 文件（有 docs 对应的只更新指针摘要，无对应的更新实质内容）。
+5. **更新 memory 文件**：如果有新的结论或决策，更新对应的 memory 文件（有 docs 对应的只更新指针摘要，无对应的更新实质内容）。memory 路径：`~/.claude/projects/-Users-huminghe-Documents-projects-quant-mh/memory/`，优化进展对应 `project_crypto_optimization_roadmap.md`。
 
 ## 文档组织原则
 
@@ -47,7 +47,7 @@
 
 ## 数据合并前置检查
 
-**IMPORTANT：用外部数据与 TV 交易记录合并前，必须先对齐时区。**
+**⚠️ CRITICAL：用外部数据与 TV 交易记录合并前，必须先对齐时区。此错误曾导致 ER/CI 所有结论全部作废。**
 
 - TV 导出的交易记录是 UTC+8 naive datetime
 - Binance/OKX API 返回 UTC 时间戳
@@ -79,10 +79,14 @@
 - 暂停机制：`docs/pause_mechanism.md`
 - 健康度监控：`docs/health_monitor.md`
 - 趋势跟踪研究框架：`docs/trend_following_research.md`
-- 过滤器验证结论索引：`docs/filters_validation.md`
+- 过滤器验证结论索引（高频查阅，保持同步）：`docs/filters_validation.md`
 - 研究工作流规范：`docs/research_workflow.md`
 - 策略版本性能对比：`docs/strategy_versions.md`
 - 交易量数据可靠性调研：`docs/volume_research.md`
 - 小币调研结论：`docs/small_token_research.md`
 - 七标的深度配置对比（2026-05）：`docs/portfolio_research_2026.md`
 - 停止运行决策（LINK/ARB/LDO）：`docs/stop_decision_link_arb_ldo.md`
+- 代币选择框架：`docs/token_selection_framework.md`
+- 七标的深度配置对比（2026-05）：`docs/portfolio_research_2026.md`
+- 历史错误与规则积累：`.claude/lessons.md`
+- 交易成本、数据约定、回测验收标准：`.claude/rules/trading-standards.md`

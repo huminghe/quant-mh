@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ACF（自相关系数）入场过滤验证（2026-05-27）
 
 ACF(lag) = 价格收益率序列与其滞后 lag 期的 Pearson 相关系数

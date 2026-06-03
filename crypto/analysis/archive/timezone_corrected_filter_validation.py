@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 时区修正后入场过滤器全面验证（2026-05-29）
 
 背景：

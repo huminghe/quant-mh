@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 ER(10) 2H ≥0.3 入场过滤 — 全策略版本验证（2026-05-27）
 
 验证 ER≥0.3 (2H) 在 v1/v2/v3_205m/v3_3h 上的效果，

@@ -1,4 +1,5 @@
 """
+# ARCHIVED: 结论已固化到 docs/strategy_research_log.md 或 docs/filters_validation.md，不再需要运行
 所有指标的过滤效果验证：看总收益（固定资本 20000 USDT/标的）
 用 4H 时间级别，与 CI 保持一致
 """
