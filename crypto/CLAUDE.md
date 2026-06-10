@@ -59,6 +59,12 @@
 - 修正方法：`df['entry_dt'] = pd.to_datetime(df['entry_dt']) - pd.Timedelta(hours=8)`
 - 验证方法：取一笔已知入场时间的交易，检查合并后匹配到的 K 线时间是否合理
 
+**⚠️ TV xlsx 导出格式变更（2026-06-10）：**
+- 交易记录 sheet 名从 `交易清单` 改成 `交易`
+- 分析脚本已兼容，回退顺序：`交易清单` → `交易` → `List of trades` → `Trades`
+- 字段名变更：盈亏比 `平均胜率/平均负率` → `平均盈利/平均亏损`；持仓K线 `交易的平均#K线数` → `交易者平均K线`
+- 已修复文件：`analysis_utils.py`、`report_md.py`、`analyze_strategies.py`、`plot_equity_curves.py`
+
 ## 回撤计算
 
 使用固定资本分母（如每标的 20000 USDT），不用峰值百分比；计算前先说明方法。
