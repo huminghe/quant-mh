@@ -101,7 +101,7 @@ DOGE_ema 最大回撤 44.28%，不可用，已排除。v3_205m 是 DOGE 最优�
 
 ETH+SOL 是最优两标的组合；BTC+ETH+SOL 加入 BTC 回撤几乎不变，增加分散化；加 DOGE 后整体回撤上升约 0.5%。
 
-详细组合分析（单标的内部融合、全量组合）见 `docs/multi_asset_combination_analysis.md`。
+详细组合分析（单标的内部融合、全量组合）见 `docs/active/multi_asset_combination_analysis.md`。
 
 ---
 

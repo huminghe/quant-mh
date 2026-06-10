@@ -1,8 +1,8 @@
 # 入场/出场过滤器验证结论
 
 验证数据：2019-2026，BTC/ETH/SOL/DOGE，v1/v2 策略版本。
-详细过程见 `docs/strategy_research_log.md`，分析脚本见 `analysis/`。
-理论框架（双均线本质、失效条件、改进方向）见 `docs/trend_following_research.md`。
+详细过程见 `docs/active/strategy_research_log.md`，分析脚本见 `analysis/`。
+理论框架（双均线本质、失效条件、改进方向）见 `docs/background/trend_following_research.md`。
 
 > **⚠️ 2026-05-29 重要更新：时区错误导致之前所有正向结论作废**
 >

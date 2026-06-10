@@ -61,5 +61,5 @@ quant-mh/
 ## 参考文档
 
 - 券商选型、交易接口、交易成本：`a_stock/docs/broker_and_cost.md`
-- 量化研究工作流规范：`crypto/docs/research_workflow.md`
+- 量化研究工作流规范：`crypto/docs/background/research_workflow.md`
 - 历史错误与规则积累：`.claude/lessons.md`

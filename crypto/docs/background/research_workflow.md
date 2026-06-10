@@ -112,6 +112,6 @@ with open('/tmp/research_progress.txt', 'a') as f:
 
 ## 参考案例
 
-本规范的第一个完整案例：ATR 动态定仓研究（2026-05-29），见 `docs/strategy_research_log.md` 中"2026-05-29｜ATR 动态定仓验证"条目。该条目包含完整的数据范围、测试规模、参数选择理由、过拟合风险评估和样本外说明。
+本规范的第一个完整案例：ATR 动态定仓研究（2026-05-29），见 `docs/active/strategy_research_log.md` 中"2026-05-29｜ATR 动态定仓验证"条目。该条目包含完整的数据范围、测试规模、参数选择理由、过拟合风险评估和样本外说明。
 
-注：CI 和 ER 的 2026-05-27 条目因时区错误（UTC vs UTC+8）结论作废，已在 strategy_research_log.md 中标注。最新结论见 `docs/filters_validation.md`。
+注：CI 和 ER 的 2026-05-27 条目因时区错误（UTC vs UTC+8）结论作废，已在 strategy_research_log.md 中标注。最新结论见 `docs/active/filters_validation.md`。

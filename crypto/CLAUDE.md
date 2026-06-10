@@ -17,28 +17,28 @@
 - `analysis/archive/`：已完结的验证脚本（结论已固化进 memory 或 research_log），保留不删除
 - `analysis/reports/`：所有生成产物（`charts_*/`、`health_report_*.md`、`regime_monitor_*`），不提交 git
 
-**判断"已完结"的标准：** 该脚本验证的结论已写入 `docs/strategy_research_log.md` 或 `docs/filters_validation.md`，且不需要再次运行。
+**判断"已完结"的标准：** 该脚本验证的结论已写入 `docs/active/strategy_research_log.md` 或 `docs/active/filters_validation.md`，且不需要再次运行。
 
 ## 研究日志
 
-研究结论追加到 `docs/strategy_research_log.md`，**IMPORTANT：使用 `docs/research_workflow.md` 中定义的完整格式**（含数据范围、测试规模、参数选择理由、过拟合风险、样本外验证、排除的方向）。
+研究结论追加到 `docs/active/strategy_research_log.md`，**IMPORTANT：使用 `docs/background/research_workflow.md` 中定义的完整格式**（含数据范围、测试规模、参数选择理由、过拟合风险、样本外验证、排除的方向）。
 
 ## 研究总结检查清单
 
 用户说"总结"或"更新文档"时，按顺序执行以下5项，全部完成后再汇报：
 
 1. **保存 /tmp 脚本**：检查 `/tmp/*.py`，把有独立分析价值的最终版本复制到 `analysis/`，加上结论性注释头。中间调试版本（命名带 debug/entry2/fix 等）不用保存。
-2. **写研究日志**：有实质结论的研究追加到 `docs/strategy_research_log.md`。
+2. **写研究日志**：有实质结论的研究追加到 `docs/active/strategy_research_log.md`。
 3. **标注已有文件的局限性**：如果本次研究发现某个已有脚本或文档有问题，在原文件里直接标注，不能只记在日志里。
-4. **更新"明确不做"列表**：如果得出"这个方向不值得做"的结论，追加到 `docs/filters_validation.md` 的快速索引表。
+4. **更新"明确不做"列表**：如果得出"这个方向不值得做"的结论，追加到 `docs/active/filters_validation.md` 的快速索引表。
 5. **更新 memory 文件**：如果有新的结论或决策，更新对应的 memory 文件（有 docs 对应的只更新指针摘要，无对应的更新实质内容）。memory 路径：`~/.claude/projects/-Users-huminghe-Documents-projects-quant-mh/memory/`，优化进展对应 `project_crypto_optimization_roadmap.md`。
 
 ## 文档组织原则
 
 **按稳定程度分文件，不按研究深度分文件：**
-- 框架类（理论、改进方向，很少改动）→ 独立文档，如 `trend_following_research.md`
-- 实验流水账（过程、数据、初步发现，持续追加）→ 研究日志
-- 高频查阅的结论索引（测了 10+ 个指标、需要快速查参数）→ 独立索引文档，如 `filters_validation.md`
+- 框架类（理论、改进方向，很少改动）→ `docs/background/`
+- 实验流水账（过程、数据、初步发现，持续追加）→ `docs/active/strategy_research_log.md`
+- 高频查阅的结论索引（测了 10+ 个指标、需要快速查参数）→ `docs/active/filters_validation.md`
 - 已过期/被取代的文档 → `docs/archive/`
 
 **归档标准（同时满足以下两条才能归档）：**
@@ -80,17 +80,22 @@
 
 ## 参考文档
 
-- 暂停机制：`docs/pause_mechanism.md`
-- 健康度监控：`docs/health_monitor.md`
-- 趋势跟踪研究框架：`docs/trend_following_research.md`
-- 过滤器验证结论索引（高频查阅，保持同步）：`docs/filters_validation.md`
-- 研究工作流规范：`docs/research_workflow.md`
-- 策略版本性能对比与当前部署配置：`docs/strategy_versions.md`
-- 多标的多策略组合分析（研究过程）：`docs/multi_asset_combination_analysis.md`
-- 交易量数据可靠性调研：`docs/volume_research.md`
-- 小币调研结论：`docs/small_token_research.md`
-- 七标的深度配置对比（2026-05）：`docs/portfolio_research_2026.md`
-- 停止运行决策（LINK/ARB/LDO）：`docs/stop_decision_link_arb_ldo.md`
-- 代币选择框架：`docs/token_selection_framework.md`
+**active/**（当前决策依据，保持最新）
+- 暂停机制：`docs/active/pause_mechanism.md`
+- 健康度监控：`docs/active/health_monitor.md`
+- 过滤器验证结论索引（高频查阅，保持同步）：`docs/active/filters_validation.md`
+- 策略版本性能对比与当前部署配置：`docs/active/strategy_versions.md`
+- 多标的多策略组合分析（研究过程）：`docs/active/multi_asset_combination_analysis.md`
+- 代币选择框架：`docs/active/token_selection_framework.md`
+- 研究日志：`docs/active/strategy_research_log.md`
+
+**background/**（背景理解，偶尔查阅）
+- 趋势跟踪研究框架：`docs/background/trend_following_research.md`
+- 研究工作流规范：`docs/background/research_workflow.md`
+- 交易量数据可靠性调研：`docs/background/volume_research.md`
+
+**archive/**（结论已固化）：`docs/archive/`
+
+**其他**
 - 历史错误与规则积累：`.claude/lessons.md`
 - 交易成本、数据约定、回测验收标准：`.claude/rules/trading-standards.md`
