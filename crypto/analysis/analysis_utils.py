@@ -6,13 +6,23 @@ import datetime
 import openpyxl
 
 
+def _get_trade_sheet(wb):
+    """获取交易记录 sheet，兼容新旧 TV 导出格式。
+    历史格式：'交易清单'；2026-06 新格式：'交易'；英文格式：'List of trades'。
+    """
+    for name in ("交易清单", "交易", "List of trades", "Trades"):
+        if name in wb.sheetnames:
+            return wb[name]
+    raise KeyError(f"找不到交易记录 sheet，可用 sheets：{wb.sheetnames}")
+
+
 def read_equity_curve(filepath: str) -> list[tuple[datetime.date, float]]:
     """
     从 TradingView 导出的 Excel 读取出场时间序列。
     返回 [(date, cumulative_pnl_pct), ...] 按日期升序。
     """
     wb = openpyxl.load_workbook(filepath, read_only=True)
-    ws = wb["交易清单"]
+    ws = _get_trade_sheet(wb)
     dm: dict[datetime.date, float] = {}
     for r in ws.iter_rows(values_only=True):
         if (r[1] and "出场" in str(r[1])
@@ -29,7 +39,7 @@ def read_monthly_pnl(filepath: str) -> dict[tuple[int, int], float]:
     返回 {(year, month): pnl_usdt}
     """
     wb = openpyxl.load_workbook(filepath, read_only=True)
-    ws = wb["交易清单"]
+    ws = _get_trade_sheet(wb)
     monthly: dict[tuple[int, int], float] = {}
     for r in ws.iter_rows(values_only=True):
         if (r[1] and "出场" in str(r[1])

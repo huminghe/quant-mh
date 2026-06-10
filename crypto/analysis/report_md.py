@@ -125,7 +125,8 @@ def _read_trades(fp: str) -> list[dict]:
     import datetime as _dt
     wb = openpyxl.load_workbook(fp, read_only=True)
     sn = ("交易清单" if "交易清单" in wb.sheetnames
-          else ("List of trades" if "List of trades" in wb.sheetnames else None))
+          else ("交易" if "交易" in wb.sheetnames
+          else ("List of trades" if "List of trades" in wb.sheetnames else None)))
     if sn is None:
         wb.close()
         return []
@@ -665,11 +666,13 @@ def _gen_conclusion(data: dict, files: dict[str, str]) -> str:
         # 胜率
         wr_raw = (_gk(st, "获利百分比", "全部%") or _gk(st, "Percent profitable", "全部%"))
         win_rate = wr_raw if wr_raw > 1 else wr_raw * 100  # 有些是小数形式
-        # 盈亏比
-        ratio = (_gk(st, "平均胜率/平均负率", "全部USDT")
+        # 盈亏比（兼容新旧 TV 导出字段名）
+        ratio = (_gk(st, "平均盈利/平均亏损", "全部USDT")
+                 or _gk(st, "平均胜率/平均负率", "全部USDT")
                  or _gk(st, "Ratio avg win / avg loss", "全部USDT"))
-        # 平均持仓 K 线数
-        avg_bars = int(_gk(st, "交易的平均#K线数", "全部USDT")
+        # 平均持仓 K 线数（兼容新旧 TV 导出字段名）
+        avg_bars = int(_gk(st, "交易者平均K线", "全部USDT")
+                       or _gk(st, "交易的平均#K线数", "全部USDT")
                        or _gk(st, "Avg # bars in trades", "全部USDT"))
         # 最大连续亏损
         max_loss_streak = _max_consec_loss(tlist)

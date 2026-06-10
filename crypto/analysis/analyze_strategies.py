@@ -103,7 +103,13 @@ def read_stats(filepath):
 def read_equity_curve(filepath):
     """返回 [(datetime, cumulative_pnl_pct), ...] 出场时间序列"""
     wb = openpyxl.load_workbook(filepath, read_only=True)
-    ws = wb['交易清单']
+    for _sn in ("交易清单", "交易", "List of trades", "Trades"):
+        if _sn in wb.sheetnames:
+            ws = wb[_sn]
+            break
+    else:
+        wb.close()
+        return []
     points = []
     for r in ws.iter_rows(values_only=True):
         if r[1] and '出场' in str(r[1]) and isinstance(r[2], datetime.datetime) and r[14] is not None:
