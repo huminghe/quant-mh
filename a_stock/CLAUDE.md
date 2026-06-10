@@ -30,7 +30,7 @@
 
 ## 研究日志
 
-研究结论追加到 `docs/research.md`，使用根级 `crypto/docs/research_workflow.md` 中定义的完整格式。
+研究过程日志追加到 `docs/research_log.md`（与 crypto 命名统一）。综合调研结论汇总在 `docs/research.md`。格式规范：`crypto/docs/research_workflow.md`。
 
 ## 参考文档
 

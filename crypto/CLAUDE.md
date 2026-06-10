@@ -39,9 +39,13 @@
 - 框架类（理论、改进方向，很少改动）→ 独立文档，如 `trend_following_research.md`
 - 实验流水账（过程、数据、初步发现，持续追加）→ 研究日志
 - 高频查阅的结论索引（测了 10+ 个指标、需要快速查参数）→ 独立索引文档，如 `filters_validation.md`
-- 已完结/已过期的文档 → `docs/archive/`
+- 已过期/被取代的文档 → `docs/archive/`
 
-**判断"已完结"的标准：** 该文档描述的决策已执行、结论已固化进其他文档，或已被更新版本取代（顶部有"已由 X 取代"标注）。
+**归档标准（同时满足以下两条才能归档）：**
+1. 内容已被其他文档完全吸收（新文档包含原文档的所有有效信息）
+2. 原文档不再有独立参考价值（删掉不会造成信息丢失）
+
+**不能作为归档理由：** "决策已执行"。执行了的决策文档恰恰需要保留——它记录的是"为什么这样做"，是当前配置的依据。
 
 **单个指标验证结论追加到研究日志即可，不需要单独建文档。**
 
@@ -81,12 +85,12 @@
 - 趋势跟踪研究框架：`docs/trend_following_research.md`
 - 过滤器验证结论索引（高频查阅，保持同步）：`docs/filters_validation.md`
 - 研究工作流规范：`docs/research_workflow.md`
-- 策略版本性能对比：`docs/strategy_versions.md`
+- 策略版本性能对比与当前部署配置：`docs/strategy_versions.md`
+- 多标的多策略组合分析（研究过程）：`docs/multi_asset_combination_analysis.md`
 - 交易量数据可靠性调研：`docs/volume_research.md`
 - 小币调研结论：`docs/small_token_research.md`
 - 七标的深度配置对比（2026-05）：`docs/portfolio_research_2026.md`
 - 停止运行决策（LINK/ARB/LDO）：`docs/stop_decision_link_arb_ldo.md`
 - 代币选择框架：`docs/token_selection_framework.md`
-- 七标的深度配置对比（2026-05）：`docs/portfolio_research_2026.md`
 - 历史错误与规则积累：`.claude/lessons.md`
 - 交易成本、数据约定、回测验收标准：`.claude/rules/trading-standards.md`
