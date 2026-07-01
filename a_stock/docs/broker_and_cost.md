@@ -4,8 +4,8 @@
 
 | 数据源 | 类型 | 说明 |
 |--------|------|------|
-| tushare | 付费（积分制） | 日线、财务、资金流、龙虎榜等，质量高，主数据源；ETF日线（`fund_daily`）需5000积分（约500元/年），财务因子（`fina_indicator`）需2000积分 |
-| akshare | 免费 | 爬虫聚合，覆盖广；**2025年4月起东财大规模封IP+验证码，ETF历史数据接口（`fund_etf_hist_em`）频繁失效，不可作为生产数据源，只能作为补充** |
+| tushare | 付费（积分制） | **主数据源**。ETF日线（`fund_daily`）和财务因子（`fina_indicator`）均需2000积分；5000积分（500元/年）提升频次上限。2025年8月有过5天停运事件，需冷备。 |
+| akshare | 免费 | **ETF冷备**（`fund_etf_hist_em`，来源东方财富）。2026年验证可用，但属爬虫接口，不稳定，仅作tushare不可用时的应急恢复。**BaoStock不支持ETF历史日线**，冷备只能用akshare。 |
 | MiniQMT | 实时 | 通过本地客户端获取 tick/分钟线，仅实盘用 |
 | 聚宽 | 云端平台 | 自带回测环境，适合早期验证策略逻辑，代码在云端有泄露风险 |
 | 米筐 | 付费云端 | 分钟级数据质量高，价格不透明需联系销售，同样有泄露风险 |
@@ -21,11 +21,11 @@
 | XTP（中泰证券） | Windows + Linux | 本地/任意云服务器 | 完全自由 | 低 |
 
 **结论：**
-- Linux 云服务器优先 → 中泰证券 XTP（官方 Python API，原生支持 Linux）
-- 不介意 Windows → MiniQMT，社区更活跃，资料更多
-- 不想维护运行环境 → PTrade，但代码在券商服务器，自定义受限
+- Mac 开发 + 不想买 Windows 云服务器 → **MiniQMT + qmt-bridge**（2026年活跃开源项目），Mac 通过 HTTP 调用 Windows 本地客户端，策略代码跑在 Mac 上
+- Linux 云服务器优先 → 中泰证券 XTP，但开户门槛不透明、社区弱、Python版本限制（3.9预编译），性价比不如 MiniQMT 生态
+- 不想维护运行环境 → PTrade，但封闭环境基本堵死外部数据源（tushare等接入极难）
 
-**XtQuant 工作方式：** Python 策略脚本通过本地 IPC 与 MiniQMT 客户端通信下单，脚本和客户端必须在同一台机器上。
+**XtQuant 工作方式：** Python 策略脚本通过本地 IPC 与 MiniQMT 客户端通信下单，脚本和客户端必须在同一台机器上。qmt-bridge 可将 MiniQMT 暴露为 HTTP API，解耦 Windows 依赖。
 
 ### 期货接口（商品期货 / 股指期货）
 
