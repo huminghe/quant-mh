@@ -63,14 +63,14 @@
 
 ## 回测工具选型
 
-- vectorbt：多因子/ETF 轮动主力回测工具，向量化快速，代码简洁
+- 自实现 pandas/numpy 回测：当前实际主力（27个回测脚本全部此方案），vectorbt 因 LLVM 依赖冲突安装失败，性价比不足未再投入（详见 `.claude/lessons.md`）
 - Qlib：因子积累后迁移，内置 Alpha158、Point-in-Time、IC 检验，后续可接 RD-Agent
 - backtrader：跳过，场景与本项目不匹配
 - vnpy：期货 CTA 回测 + 实盘，一体化
 
 ## AI 因子挖掘
 
-- 半自动流程（现在可用）：人工找论文/帖子 → AI 解读生成 vectorbt 代码 → 自己跑回测验证
+- 半自动流程（现在可用）：人工找论文/帖子 → AI 解读生成回测代码 → 自己跑回测验证
 - 论文来源：SSRN q-fin、arXiv q-fin、聚宽社区、BigQuant、"因子动物园"公众号、券商金工研报
 - 全自动流程（后期）：Qlib + RD-Agent，因子积累到一定数量后再考虑
 - RD-Agent 默认基于 Alpha158，需要自定义输入方向才能避免同质化

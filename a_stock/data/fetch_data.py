@@ -1,7 +1,7 @@
 """
 tushare 数据获取主入口
-- 首次运行：下载 2015-01-01 至今的完整历史数据
-- 增量更新：只补全缺失的最新交易日
+- 每次运行：全量重新拉取 2015-01-01 至今的完整历史数据并覆盖本地文件
+  （不用增量追加，因为后复权基准会随分红/拆分变化，增量拼接会产生价格断层）
 - 存储格式：Parquet，每只 ETF 一个文件，按 trade_date 升序
 """
 
@@ -53,17 +53,46 @@ def init_pro() -> ts.pro_api:
 
 # ── 单只 ETF 数据获取 ─────────────────────────────────────
 
+def fetch_fund_adj_full(pro, ts_code: str, start_date: str, end_date: str) -> pd.DataFrame:
+    """
+    分段拉取 fund_adj 复权因子，覆盖完整日期范围。
+    fund_adj 单次调用有约2000条上限，长区间（如2015年至今）会静默截断到最近的2000条，
+    早期日期拿不到 adj_factor，如果不分段会导致早期价格漏复权、在截断点产生价格断层。
+    """
+    start_ts = pd.Timestamp(start_date)
+    end_ts = pd.Timestamp(end_date)
+    chunks = []
+    cur = start_ts
+    while cur <= end_ts:
+        chunk_end = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), end_ts)
+        part = pro.fund_adj(
+            ts_code=ts_code,
+            start_date=cur.strftime("%Y%m%d"),
+            end_date=chunk_end.strftime("%Y%m%d"),
+        )
+        if part is not None and not part.empty:
+            chunks.append(part)
+        cur = chunk_end + pd.Timedelta(days=1)
+    if not chunks:
+        return pd.DataFrame()
+    return pd.concat(chunks, ignore_index=True).drop_duplicates("trade_date")
+
+
 def fetch_single(pro, ts_code: str, start_date: str, end_date: str) -> pd.DataFrame:
     """
     从 tushare 获取单只 ETF 复权日线数据。
     返回列：trade_date, open, high, low, close, vol, amount
     trade_date 为 datetime 类型，按升序排列。
+
+    注意：不用 pro_bar(adj="hfq")！实测发现该接口在 ETF 份额折算（拆分/合并）
+    事件上不做复权修正，会在事件发生日产生价格断层（实测最大达-90%）。
+    改为拉取不复权价 + fund_adj 复权因子，手工相乘还原正确的后复权序列。
     """
     df = ts.pro_bar(
         ts_code=ts_code,
         api=pro,
         asset="FD",          # FD = 基金/ETF
-        adj="hfq",           # 后复权
+        adj=None,            # 不复权，自己用 adj_factor 手工复权
         start_date=start_date,
         end_date=end_date,
         factors=["tor"],     # 换手率，轮动策略用得上
@@ -71,8 +100,18 @@ def fetch_single(pro, ts_code: str, start_date: str, end_date: str) -> pd.DataFr
     if df is None or df.empty:
         return pd.DataFrame()
 
+    adj = fetch_fund_adj_full(pro, ts_code, start_date, end_date)
     df["trade_date"] = pd.to_datetime(df["trade_date"])
     df = df.sort_values("trade_date").reset_index(drop=True)
+
+    if adj is not None and not adj.empty:
+        adj = adj[["trade_date", "adj_factor"]].copy()
+        adj["trade_date"] = pd.to_datetime(adj["trade_date"])
+        df = df.merge(adj, on="trade_date", how="left")
+        df["adj_factor"] = df["adj_factor"].fillna(1.0)
+        for col in ["open", "high", "low", "close"]:
+            df[col] = df[col] * df["adj_factor"]
+        df = df.drop(columns=["adj_factor"])
 
     # 只保留需要的列，统一字段名
     keep = ["trade_date", "open", "high", "low", "close", "vol", "amount", "tor"]
@@ -80,18 +119,12 @@ def fetch_single(pro, ts_code: str, start_date: str, end_date: str) -> pd.DataFr
     return df
 
 
-# ── 增量更新逻辑 ──────────────────────────────────────────
-
-def get_last_date(parquet_path: pathlib.Path) -> str | None:
-    """读取已有 Parquet 文件的最后一条 trade_date，返回 yyyymmdd 字符串"""
-    if not parquet_path.exists():
-        return None
-    df = pd.read_parquet(parquet_path, columns=["trade_date"])
-    if df.empty:
-        return None
-    last = df["trade_date"].max()
-    return pd.Timestamp(last).strftime("%Y%m%d")
-
+# ── 全量更新逻辑 ──────────────────────────────────────────
+#
+# 注意：不能用"增量追加"！后复权（adj="hfq"）的价格基准会在每次分红/拆分
+# 发生后被 tushare 重新计算，增量拉取的新数据和本地缓存的旧数据基准不一致，
+# 拼接后会在复权事件发生日产生价格断层（实测最大达-90%），严重扭曲回测。
+# 因此每次更新都全量重新拉取完整历史，保证同一基准。
 
 def save_parquet(df: pd.DataFrame, path: pathlib.Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,36 +133,16 @@ def save_parquet(df: pd.DataFrame, path: pathlib.Path) -> None:
 
 def update_single(pro, ts_code: str, today: str) -> str:
     """
-    增量更新单只 ETF。
-    返回操作描述：'新建'、'更新 N 条'、'已最新'、'无数据'
+    全量更新单只 ETF（重新拉取完整历史并覆盖本地文件）。
+    返回操作描述：'更新 N 条'、'无数据'
     """
     parquet_path = DATA_DIR / f"{ts_code}.parquet"
-    last_date = get_last_date(parquet_path)
-
-    if last_date is None:
-        start = START_DATE
-        action = "新建"
-    elif last_date >= today:
-        return "已最新"
-    else:
-        # 从上次最后日期的下一天开始拉
-        start = (pd.Timestamp(last_date) + pd.Timedelta(days=1)).strftime("%Y%m%d")
-        action = "更新"
-
-    new_df = fetch_single(pro, ts_code, start, today)
+    new_df = fetch_single(pro, ts_code, START_DATE, today)
     if new_df.empty:
         return "无数据"
 
-    if action == "新建":
-        save_parquet(new_df, parquet_path)
-        return f"新建 {len(new_df)} 条"
-    else:
-        # 追加到已有数据
-        old_df = pd.read_parquet(parquet_path)
-        merged = pd.concat([old_df, new_df], ignore_index=True)
-        merged = merged.drop_duplicates("trade_date").sort_values("trade_date").reset_index(drop=True)
-        save_parquet(merged, parquet_path)
-        return f"更新 {len(new_df)} 条"
+    save_parquet(new_df, parquet_path)
+    return f"更新 {len(new_df)} 条"
 
 
 # ── 批量更新 ──────────────────────────────────────────────
@@ -147,15 +160,12 @@ def run_update(codes: list[str] = ETF_CODES, delay: float = 0.4) -> None:
     print(f"数据目录：{DATA_DIR.resolve()}")
     print("-" * 60)
 
-    ok, skip, fail = 0, 0, 0
+    ok, fail = 0, 0
     for i, ts_code in enumerate(codes, 1):
         name = ETF_UNIVERSE.get(ts_code, ts_code)
         try:
             result = update_single(pro, ts_code, today)
-            if result == "已最新":
-                skip += 1
-            else:
-                ok += 1
+            ok += 1
             print(f"[{i:02d}/{total}] {ts_code} {name:<18} {result}")
         except Exception as e:
             fail += 1
@@ -164,7 +174,7 @@ def run_update(codes: list[str] = ETF_CODES, delay: float = 0.4) -> None:
         time.sleep(delay)
 
     print("-" * 60)
-    print(f"完成：更新 {ok} 只，已最新 {skip} 只，失败 {fail} 只")
+    print(f"完成：更新 {ok} 只，失败 {fail} 只")
 
 
 # ── 读取工具函数（供回测脚本调用）────────────────────────
