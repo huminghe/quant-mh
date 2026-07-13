@@ -1,5 +1,7 @@
 # Paper-to-VectorBT 演示总结
 
+> **已归档（2026-07-10）**：本文档描述的演示代码依赖 `vectorbt`（从未安装成功，见 `.claude/lessons.md`），从未实际跑通。该因子的实际验证已由 `a_stock/backtest/factor_ic_reversal.py` 取代，结论见 `a_stock/docs/research.md`。
+
 ## 完成的工作
 
 ✅ **生成了完整的回测代码**

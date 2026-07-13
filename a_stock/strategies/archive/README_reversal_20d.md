@@ -1,5 +1,7 @@
 # 20 日短期反转策略 - 使用说明
 
+> **已归档（2026-07-10）**：本文档及同目录下的 `reversal_20d_hs300.py`、`test_reversal.py` 是 2026-04-27 用 paper-to-vectorbt skill 生成的演示代码，依赖 `vectorbt`（从未安装成功，见 `.claude/lessons.md`），从未实际跑通。该因子的实际验证已由 `a_stock/backtest/factor_ic_reversal.py`（自实现 pandas，结论见 `a_stock/docs/research.md` "反转因子实测 IC"小节）取代，请以后者为准。
+
 ## 策略概述
 
 **核心逻辑：** 买入过去 20 个交易日收益率最低的 30% 股票（短期反转效应）

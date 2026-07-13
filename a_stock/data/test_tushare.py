@@ -133,7 +133,6 @@ print("=" * 60)
 print("\n✓ Tushare 连接成功！")
 print("\n下一步:")
 print("1. 如果积分不足，完成新手任务: https://tushare.pro/document/1?doc_id=13")
-print("2. 运行策略测试: python strategies/test_reversal.py")
-print("3. 运行完整回测: python strategies/reversal_20d_hs300.py")
+print("2. 运行回测: python backtest/factor_ic_reversal.py")
 
 print("\n" + "=" * 60)
