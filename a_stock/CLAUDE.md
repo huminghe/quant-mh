@@ -30,7 +30,7 @@
 
 ## 研究日志
 
-研究过程日志追加到 `docs/research_log.md`（与 crypto 命名统一）。综合调研结论汇总在 `docs/research.md`。格式规范：`crypto/docs/background/research_workflow.md`。
+研究过程和结论统一追加到 `docs/research.md`（未拆分独立 research_log，因子/策略调研量级远小于 crypto，单文件即可）。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
 
 ## 参考文档
 

@@ -20,6 +20,6 @@
 - 语言：Python
 - A 股数据源：tushare + akshare
 - A 股交易接口：MiniQMT (XtQuant) / XTP
-- A 股回测：vectorbt → Qlib
+- A 股回测：自实现 pandas/numpy（vectorbt 因 LLVM 依赖冲突未装成）→ Qlib（因子积累后迁移）
 - 加密货币：TradingView Pine Script + Webhook → OKX/Binance
 

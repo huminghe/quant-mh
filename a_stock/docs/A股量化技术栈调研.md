@@ -34,12 +34,12 @@
 
 | 工具 | 适用场景 | 说明 |
 |------|---------|------|
-| vectorbt | ETF 轮动、多因子选股 | 向量化计算，速度快，代码简洁，首选 |
+| vectorbt | ~~ETF 轮动、多因子选股~~ | ~~向量化计算，速度快，代码简洁，首选~~ **过时：LLVM依赖冲突从未装成，实际全部自实现pandas/numpy回测，见 `.claude/lessons.md`** |
 | Qlib（微软） | 多因子选股（因子积累后） | 内置 Alpha158/Point-in-Time/IC 检验，可接 RD-Agent |
 | backtrader | 跳过 | 事件驱动，适合复杂订单逻辑，本项目场景用不上 |
 | vnpy | 商品期货 CTA | 对接 CTP 实盘，自带回测模块，期货一体化方案 |
 
-**路径：** vectorbt 起步 → Qlib（因子积累后迁移）→ RD-Agent（全自动因子挖掘）
+**路径（原计划，已过时）：** ~~vectorbt 起步~~ → Qlib（因子积累后迁移）→ RD-Agent（全自动因子挖掘）。实际路径：自实现 pandas/numpy 回测（27+脚本已用此方案）→ Qlib。
 
 
 
