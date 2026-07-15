@@ -1,5 +1,7 @@
 # A股量化交易完整技术栈调研
 
+> **已归档（2026-07-15）**：内容与 `docs/broker_and_cost.md` 高度重叠且更旧（部分回测工具选型描述已过时，vectorbt 相关内容见 `.claude/lessons.md`）。数据源/交易接口/券商选型请以 `docs/broker_and_cost.md` 为准。
+
 ## 数据源对比
 
 | 数据源 | 费用 | 适合场景 | 注意 |

@@ -1,5 +1,7 @@
 # VectorBT 安装问题与替代方案
 
+> **已归档（2026-07-15）**：VectorBT 从未安装成功，27+个回测脚本全部采用本文档"方案3自实现"的路线，结论已固化，详见 `.claude/lessons.md` 和 `memory/feedback_vectorbt_installation.md`。
+
 ## 问题分析
 
 VectorBT 依赖 llvmlite，而 llvmlite 对 LLVM 版本要求严格：
