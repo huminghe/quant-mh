@@ -99,6 +99,7 @@
 - 趋势跟踪研究框架：`docs/background/trend_following_research.md`
 - 研究工作流规范：`docs/background/research_workflow.md`
 - 交易量数据可靠性调研：`docs/background/volume_research.md`
+- AI 泡沫破裂对 BTC 价格影响调研：`docs/background/macro_ai_bubble_btc_impact.md`
 
 **archive/**（结论已固化）：`docs/archive/`
 
