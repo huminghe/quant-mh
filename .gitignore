@@ -13,6 +13,7 @@ crypto/analysis/**/charts_*/*.xlsx
 a_stock/data/*.parquet
 a_stock/data/balancesheet/
 a_stock/data/daily/
+a_stock/data/daily_universe_test/
 a_stock/data/financials/
 a_stock/data/stock_daily/
 a_stock/backtest/results/
