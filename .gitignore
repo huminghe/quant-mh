@@ -16,5 +16,6 @@ a_stock/data/daily/
 a_stock/data/daily_universe_test/
 a_stock/data/financials/
 a_stock/data/stock_daily/
+a_stock/data/fund_portfolio_cache/
 a_stock/backtest/results/
 a_stock/.ipynb_checkpoints/
