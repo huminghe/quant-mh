@@ -72,7 +72,7 @@
 - **方向A（LW）单独**：全样本夏普0.67，IS夏普0.73，改善不显著，不值得引入复杂度。
 
 **三轮共30+种方向全部穷尽（LW/区制/北向全部无效），但后续行业拥挤度方向B经改进后验证有效（见下）。**
-- 回测代码：`a_stock/backtest/etf_rotation_v3_analysis.py`、`etf_rotation_v3_diagnosis.py`
+- 回测代码：`a_stock/backtest/archive/etf_rotation_v3_analysis.py`、`etf_rotation_v3_diagnosis.py`
 
 **方向A（LW）复权bug修复后复核 + 稳健性验证（2026-07-10）：**
 
@@ -87,7 +87,7 @@
 
 **最终结论：方向A（LW最小方差权重）不通过稳健性验证，维持"不采用"。** 此前脏数据"负效果"判断和干净数据单点"有效"判断都不可靠，
 真实情况是该方向参数敏感、被单一年份驱动、样本外无增量价值。
-- 验证代码：`a_stock/backtest/etf_rotation_v3c_lw_fullval.py`
+- 验证代码：`a_stock/backtest/archive/etf_rotation_v3c_lw_fullval.py`
 
 **方向D（北向资金禁买过滤）年度IC诊断复核（2026-07-10）：**
 
@@ -132,7 +132,7 @@
 **结论：行业拥挤度软过滤（threshold=0.75, factor=0.2）系统性有效。**
 - 最大回撤从 -35.8% 压缩至 -25.8%，全样本夏普 +0.177，月胜率从 56.8% 提升至 60.0%
 - 推荐参数：threshold=0.75, factor=0.2（全样本夏普最优，回撤大幅改善，稳健性最佳）
-- 回测代码：`a_stock/backtest/etf_rotation_v3b_crowding.py`、`etf_rotation_v3b_fullval.py`
+- 回测代码：`a_stock/backtest/archive/etf_rotation_v3b_crowding.py`、`etf_rotation_v3b_fullval.py`
 
 **当前状态：** 模拟盘运行中（2026-06-29 启动）。2026-07-08 数据修复+重新验证后，已从信号中移除拥挤度过滤，简化为纯风险调整动量。
 - 信号脚本：`a_stock/backtest/signal_today.py`，每月第一个交易日运行
@@ -179,7 +179,7 @@
 **根本原因（统一）：** A股ETF轮动 alpha 来源是机构资金惯性，信号本身区分度已接近极限。任何降低信号区分度（shrinkage/EMA平滑）或降低响应速度（惰性调仓/EMA平滑）的操作均净负。
 
 **八轮全局结论（截至2026-07-01）：在当前框架内（月度动量轮动）所有改进方向已全部穷尽（8轮，40+种方向）。风险调整动量+拥挤度修正（0.75,0.2）是全局最优，夏普1.005，最大回撤-25.8%。继续改进需转入指数增强/商品期货CTA。**
-- 回测代码：`a_stock/backtest/etf_rotation_v5_new_directions.py`
+- 回测代码：`a_stock/backtest/archive/etf_rotation_v5_new_directions.py`
 
 **第九轮：干净数据全量去重后剩余3个未测方向（2026-07-10，全部完成）：**
 
@@ -203,7 +203,7 @@
 - **结论：维持保留QDII（无需改动代码，当前配置已经是最优状态），同时更新文档移除"未测/排除"的过时记录**
 
 **九轮全局结论（截至2026-07-10）：干净数据下全量去重的最后3个方向全部验证完毕，无新增改动项。当前上线配置（纯风险调整动量，含QDII标的池，Top3，25日窗口，月度调仓）确认为该框架全局最优，夏普1.053。ETF轮动框架内改进空间已彻底穷尽，后续不再需要在此框架内寻找新方向，精力转向指数增强/商品期货CTA。**
-- 回测代码：`a_stock/backtest/etf_rotation_v9_quarterly.py`、`etf_rotation_v9_voltarget.py`、`etf_rotation_v9_qdii_ic.py`
+- 回测代码：`a_stock/backtest/archive/etf_rotation_v9_quarterly.py`、`etf_rotation_v9_voltarget.py`、`etf_rotation_v9_qdii_ic.py`
 
 **第十轮：统计显著性检验 + 跳出动量框架的新范式探索（2026-07-10，全部完成）：**
 
@@ -226,7 +226,7 @@
 - **补充（2026-07-10）：对当前上线核心参数网格直接做PBO**——`etf_rotation_analysis.py`原始的Top N×窗口12组网格搜索用的是**未风险调整**的动量分数选参数，风险调整只在选出`best_window`后追加应用于单点参数，从未针对"风险调整动量"这个真正上线的评分公式独立重跑过网格。用`etf_rotation_v12_riskadj_grid_pbo.py`以线上评分公式（风险调整动量，含QDII）重跑Top N∈[1,3,5]×窗口∈[15,25,40,60]共12组：**Top3+25日窗口在真实评分公式下仍是全样本夏普最优（1.053，与线上历史结果一致）**；对这12个候选（同一次网格搜索、同一个决策）直接计算PBO：**PBO=0.400（6/15路径过拟合），判定不过拟合（<0.5）**。这是首次对当前上线策略核心参数本身给出的直接PBO证据。
 - **当前策略过拟合证据总结：** DSR给出中等/弱证据支持有效性（p=0.870/0.745）；核心参数网格PBO=0.400支持不过拟合；波动率目标/拥挤度过滤网格PBO=0.733（但不含当前核心决策，只交叉验证了两个已废弃方向）。三者合并看，当前上线参数本身没有过拟合的直接证据。
 - **DSR+PBO共同结论：当前策略大概率有真实alpha，核心参数网格PBO支持不过拟合，证据强度中等，不构成下线理由，也不宜过度自信。**
-- 回测代码：`a_stock/backtest/etf_rotation_v10_pbo_collect.py`（数据采集）、`etf_rotation_v10_pbo_result.py`（59候选混合PBO+两个单一网格PBO）、`etf_rotation_v12_riskadj_grid_pbo.py`（当前核心参数网格的风险调整动量重跑+PBO）
+- 回测代码：`a_stock/backtest/archive/etf_rotation_v10_pbo_collect.py`（数据采集）、`etf_rotation_v10_pbo_result.py`（59候选混合PBO+两个单一网格PBO）、`etf_rotation_v12_riskadj_grid_pbo.py`（当前核心参数网格的风险调整动量重跑+PBO）
 
 *Task C：跳出动量框架的新范式——股债收益差轮动、日历效应/季节性（独立策略回测）*
 
@@ -237,7 +237,7 @@
 
 - 股债收益差轮动：信号=沪深300 PE_TTM倒数(E/P)−中国10年期国债收益率，滚动756日分位数判断持股（510300.SH）或持债（511010.SH），月度调仓。放弃股息率方案（akshare无完整历史序列），改用PE倒数等价替代。
 - 日历效应：月份效应（12个自然月）全部|t|<1.6无统计显著性，排除；Turn-of-month效应（月末N日+月初N日窗口持有510300.SH，其余空仓）网格扫描15组，OOS衰减剧烈，排除。
-- 回测代码：`a_stock/backtest/etf_rotation_v11_stock_bond_yield_gap.py`、`etf_rotation_v11_turn_of_month.py`
+- 回测代码：`a_stock/backtest/archive/etf_rotation_v11_stock_bond_yield_gap.py`、`etf_rotation_v11_turn_of_month.py`
 
 **十轮全局结论：当前上线策略统计显著性证据中等偏弱但无下线理由，两个跳出动量框架的新范式候选均未能超越现有配置。当前上线信号维持不变（纯风险调整动量+QDII标的池，Top3，25日窗口，夏普1.053）。ETF轮动方向的探索性研究阶段性收尾，后续如无新思路，精力转向指数增强/商品期货CTA。**
 
