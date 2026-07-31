@@ -115,12 +115,18 @@ def run_backtest(
     use_corr_filter: bool = False,
     corr_threshold: float = CORR_THRESHOLD,
     corr_window: int = CORR_WINDOW,
+    use_industry_cap: bool = False,
+    industry_map: dict = None,
+    max_per_industry: int = 1,
     cash_etf: str = None,
 ) -> pd.DataFrame:
     """
     逐月调仓模拟，返回每日资产净值序列。
     执行价格：调仓日收盘价（保守，实盘用次日开盘，差异小）。
     T+1：买入次日才能卖出，月度调仓不触发T+1约束。
+
+    use_industry_cap：行业分散约束，同一行业（industry_map 给出的分类）最多入选
+    max_per_industry 只，贪心法按得分高低逐一加入，超限则跳过换下一个候选。
     """
     # 预计算大盘 MA200（用于趋势过滤）
     if use_market_filter and BENCHMARK in close.columns:
@@ -191,8 +197,9 @@ def run_backtest(
 
             # 获取当日有效得分（用当日收盘前的信号，即当日分数已计算完毕）
             day_scores = scores.loc[date].dropna()
-            # 候选集扩充（为相关性过滤留出备选）
-            candidate_size = top_n * 3 if use_corr_filter else top_n
+            # 候选集扩充（为相关性过滤/行业分散约束留出备选）
+            need_expand = use_corr_filter or use_industry_cap
+            candidate_size = top_n * 3 if need_expand else top_n
             pos_scores = day_scores[day_scores > 0].nlargest(candidate_size)
             candidates = list(pos_scores.index)
 
@@ -224,6 +231,21 @@ def run_backtest(
                             break
                     if ok:
                         selected.append(code)
+                candidates = selected  # 相关性过滤后的候选，若启用行业分散约束将在其上继续贪心
+
+            # 行业分散约束（贪心法，按得分高低逐一加入，同行业超过 max_per_industry 只则跳过）
+            if use_industry_cap and industry_map:
+                selected = []
+                industry_count = {}
+                for code in candidates:
+                    if len(selected) >= top_n:
+                        break
+                    ind = industry_map.get(code)
+                    if ind is not None and industry_count.get(ind, 0) >= max_per_industry:
+                        continue  # 该行业名额已满，跳过换下一个候选
+                    selected.append(code)
+                    if ind is not None:
+                        industry_count[ind] = industry_count.get(ind, 0) + 1
                 target_codes = selected
             else:
                 target_codes = candidates[:top_n]
