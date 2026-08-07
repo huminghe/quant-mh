@@ -119,6 +119,8 @@ def run_backtest(
     industry_map: dict = None,
     max_per_industry: int = 1,
     cash_etf: str = None,
+    amount_wide: pd.DataFrame = None,
+    impact_coef: float = 0.0,
 ) -> pd.DataFrame:
     """
     逐月调仓模拟，返回每日资产净值序列。
@@ -127,7 +129,23 @@ def run_backtest(
 
     use_industry_cap：行业分散约束，同一行业（industry_map 给出的分类）最多入选
     max_per_industry 只，贪心法按得分高低逐一加入，超限则跳过换下一个候选。
+
+    amount_wide/impact_coef：可选的成交量冲击成本模型（简化线性模型，非
+    Almgren-Chriss平方根模型，仅用于粗略敏感性测试）。amount_wide 为
+    index=trade_date, columns=ts_code 的当日成交额宽表（单位：千元，与
+    market_turnover.parquet 的 amount 字段一致）。impact_coef=0（默认）时
+    完全不影响现有调用与历史结论。>0 时，额外单边冲击成本 =
+    impact_coef * (交易金额 / 当日成交额)，叠加在 slippage 之上。
     """
+    def _impact(code: str, date, trade_value: float) -> float:
+        if impact_coef <= 0 or amount_wide is None or code not in amount_wide.columns:
+            return 0.0
+        day_amount_qian = amount_wide.loc[date, code] if date in amount_wide.index else np.nan
+        if pd.isna(day_amount_qian) or day_amount_qian <= 0:
+            return 0.0
+        day_amount_yuan = day_amount_qian * 1000
+        participation = trade_value / day_amount_yuan
+        return impact_coef * participation
     # 预计算大盘 MA200（用于趋势过滤）
     if use_market_filter and BENCHMARK in close.columns:
         benchmark_ma200 = close[BENCHMARK].rolling(MARKET_FILTER_MA).mean()
@@ -255,7 +273,9 @@ def run_backtest(
                 if code not in target_codes:
                     price = close.loc[date, code] if code in close.columns else None
                     if price is not None and not pd.isna(price):
-                        sell_price = price * (1 - slippage / 2)
+                        trade_value = holdings[code] * price
+                        impact = _impact(code, date, trade_value)
+                        sell_price = price * (1 - slippage / 2 - impact)
                         proceeds = holdings[code] * sell_price * (1 - commission)
                         cash += proceeds
                     del holdings[code]
@@ -305,14 +325,15 @@ def run_backtest(
                 price = close.loc[date, code] if code in close.columns else None
                 if price is None or pd.isna(price):
                     continue
-                buy_price = price * (1 + slippage / 2)
                 target_value = port_value * weights[code]
                 # 已有持仓先计算现有市值
                 current_shares = holdings.get(code, 0)
                 current_value = current_shares * price
                 diff_value = target_value - current_value
 
-                if diff_value > buy_price * 1:  # 至少买1份
+                if diff_value > price * 1:  # 至少买1份
+                    impact = _impact(code, date, abs(diff_value))
+                    buy_price = price * (1 + slippage / 2 + impact)
                     buy_shares = int(diff_value / buy_price / 100) * 100  # ETF按100份整手
                     if buy_shares > 0:
                         cost = buy_shares * buy_price * (1 + commission)
@@ -325,7 +346,8 @@ def run_backtest(
                 elif diff_value < -price * 100:  # 需要减仓
                     sell_shares = int(-diff_value / price / 100) * 100
                     if sell_shares > 0 and current_shares >= sell_shares:
-                        sell_price = price * (1 - slippage / 2)
+                        impact = _impact(code, date, abs(diff_value))
+                        sell_price = price * (1 - slippage / 2 - impact)
                         proceeds = sell_shares * sell_price * (1 - commission)
                         cash += proceeds
                         holdings[code] = current_shares - sell_shares

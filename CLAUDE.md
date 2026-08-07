@@ -48,7 +48,7 @@ quant-mh/
 
 1. **错误纠正 → 立即更新 lessons.md**：每当用户纠正你的行为，或你意识到自己犯了错，立即把对应规则追加到 `.claude/lessons.md`，格式：`- [类别]：[规则内容]`。
 
-2. **compact 前 → 自动写 HANDOFF.md**：收到 compact 前的提示时，先把当前会话状态写入 `.claude/HANDOFF.md`（当前任务/已完成/下一步/关键约束/未解决问题），再执行 compact。
+2. **compact 前 → 自动写 HANDOFF.md**：收到 compact 前的提示时，先清空 `.claude/HANDOFF.md` 现有内容（该文件只保留最近一次会话的交接记录，不是历史档案；旧内容的实质结论应已沉淀进 `docs/research.md`/memory/`lessons.md`，清空不丢信息），再写入当前会话状态（当前任务/已完成/下一步/关键约束/未解决问题），最后执行 compact。
 
 3. **非 trivial 任务完成后 → 主动询问是否固化**：完成以下类型的任务后，主动问用户"这个值得写进 memory 或 CLAUDE.md 吗？"：
    - 文件/目录结构整理（确定了新的组织规则）

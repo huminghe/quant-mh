@@ -72,15 +72,28 @@ def build_pit_universe(amount_wide: pd.DataFrame) -> pd.Series:
 
 # ── 2. 拉取候选池全部标的的复权价格（独立缓存目录）────────────
 
-def fetch_prices_for_candidates(codes: list) -> None:
+def fetch_prices_for_candidates(codes: list, stale_days: int = 5) -> None:
+    """
+    拉取候选标的价格并缓存。若缓存文件已存在但最新数据日期距今超过
+    stale_days个自然日（默认5天，覆盖节假日），视为过期，重新拉取覆盖。
+    这避免了"文件存在就永久跳过"导致缓存数据停留在某次历史抓取时间点，
+    被 run_backtest 当作缺失（NaN→0）处理，拖累组合净值。
+    """
     pro = init_pro()
     today = pd.Timestamp.today().strftime("%Y%m%d")
+    cutoff = pd.Timestamp.today() - pd.Timedelta(days=stale_days)
     CACHE_DIR.mkdir(exist_ok=True)
     total = len(codes)
     for i, code in enumerate(codes, 1):
         path = CACHE_DIR / f"{code}.parquet"
         if path.exists():
-            continue
+            try:
+                cached = pd.read_parquet(path, columns=["trade_date"])
+                last_date = pd.to_datetime(cached["trade_date"]).max()
+                if last_date >= cutoff:
+                    continue
+            except Exception:
+                pass  # 读取失败也视为需要重新拉取
         for attempt in range(4):
             try:
                 df = fetch_single(pro, code, FETCH_START_DATE, today)
