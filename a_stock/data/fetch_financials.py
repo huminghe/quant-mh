@@ -30,7 +30,7 @@ DELAY      = 0.4          # API 请求间隔（秒）
 
 # 需要的财务字段
 FIELDS = ("ts_code,ann_date,end_date,roe_dt,eps,netprofit_margin,debt_to_assets,"
-          "current_ratio,ocf_to_profit,netprofit_yoy")
+          "current_ratio,ocf_to_profit,netprofit_yoy,or_yoy")
 
 
 # ── Token 初始化 ──────────────────────────────────────────
@@ -105,7 +105,7 @@ def update_stock_financials(pro, ts_code: str) -> str:
             need_refresh = False
             # 检查是否缺少新字段
             all_cols = pd.read_parquet(path).columns.tolist()
-            if "ocf_to_profit" not in all_cols or "netprofit_yoy" not in all_cols:
+            if "ocf_to_profit" not in all_cols or "netprofit_yoy" not in all_cols or "or_yoy" not in all_cols:
                 need_refresh = True
         except Exception:
             need_refresh = True
@@ -135,6 +135,15 @@ def get_all_codes() -> list[str]:
             df = pd.read_parquet(fpath)
             codes.update(df["con_code"].unique())
     return sorted(codes)
+
+
+def get_all_a_share_codes() -> list[str]:
+    """全A股代码（用于行业景气度聚合信号，避免指数成分股在部分行业的大盘股偏差）"""
+    fpath = DATA_DIR / "stock_sw_industry.parquet"
+    if not fpath.exists():
+        raise FileNotFoundError(f"未找到 {fpath}，请先生成申万行业映射")
+    df = pd.read_parquet(fpath)
+    return sorted(df["ts_code"].unique())
 
 
 def run_batch(codes: list[str], delay: float = DELAY) -> None:
@@ -240,10 +249,15 @@ def main():
                         help="增量更新（跳过今天已下载的）")
     parser.add_argument("--codes", nargs="+", metavar="CODE",
                         help="指定股票代码，如 600519.SH 000858.SZ")
+    parser.add_argument("--all-a-share", action="store_true",
+                        help="全A股下载（用于行业景气度聚合信号，覆盖指数成分股之外的个股）")
     args = parser.parse_args()
 
     if args.codes:
         codes = args.codes
+    elif args.all_a_share:
+        codes = get_all_a_share_codes()
+        print(f"全A股共 {len(codes)} 只")
     else:
         codes = get_all_codes()
         if not codes:

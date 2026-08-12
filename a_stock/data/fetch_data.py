@@ -131,12 +131,24 @@ def save_parquet(df: pd.DataFrame, path: pathlib.Path) -> None:
     df.to_parquet(path, index=False)
 
 
-def update_single(pro, ts_code: str, today: str) -> str:
+def update_single(pro, ts_code: str, today: str, stale_days: int = 3) -> str:
     """
     全量更新单只 ETF（重新拉取完整历史并覆盖本地文件）。
-    返回操作描述：'更新 N 条'、'无数据'
+    若本地缓存已存在且最新数据距今不超过 stale_days 天，跳过不请求，
+    避免候选池扩容到431只后每次全量刷新触发 tushare 频率限制（500次/分钟，
+    fund_adj 分段拉取会让单只ETF产生多次调用）。
+    返回操作描述：'更新 N 条'、'无数据'、'已是最新，跳过'
     """
     parquet_path = DATA_DIR / f"{ts_code}.parquet"
+    if parquet_path.exists():
+        try:
+            cached = pd.read_parquet(parquet_path, columns=["trade_date"])
+            last_date = pd.to_datetime(cached["trade_date"]).max()
+            if last_date >= pd.Timestamp.today() - pd.Timedelta(days=stale_days):
+                return "已是最新，跳过"
+        except Exception:
+            pass  # 读取失败视为需要重新拉取
+
     new_df = fetch_single(pro, ts_code, START_DATE, today)
     if new_df.empty:
         return "无数据"
@@ -149,7 +161,7 @@ def update_single(pro, ts_code: str, today: str) -> str:
 
 def run_update(codes: list[str] = ETF_CODES, delay: float = 0.4) -> None:
     """
-    批量增量更新所有 ETF。
+    批量增量更新所有 ETF（跳过近期已刷新过的，见 update_single 的 stale_days 检查）。
     delay：每次请求间隔（秒），tushare 5000积分 500次/分钟，0.4s 约150次/分钟，安全。
     """
     pro = init_pro()
