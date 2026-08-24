@@ -18,5 +18,6 @@ a_stock/data/financials/
 a_stock/data/stock_daily/
 a_stock/data/fund_portfolio_cache/
 a_stock/data/holder_number/
+a_stock/data/fund_holding_cache/
 a_stock/backtest/results/
 a_stock/.ipynb_checkpoints/
