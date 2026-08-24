@@ -57,17 +57,29 @@ def init_pro() -> ts.pro_api:
 
 def fetch_index_members_history(pro) -> pd.DataFrame:
     """
-    拉取沪深 300 历史成分股月度权重快照（index_weight）。
+    拉取历史成分股月度权重快照（index_weight）。
     返回：trade_date（月末日期）、con_code（成分股代码）两列。
     tushare index_weight 每月一条快照，需要循环按月拉取。
+
+    ⚠️ 月末交易日修正（2026-08）：不能直接用 pd.date_range(freq="ME") 生成
+    自然日历月末去查询——当月最后一天若是周末/节假日（非交易日），
+    index_weight 直接返回空，该月份被静默跳过。历史曾导致 hs500_members
+    91/99个月末快照缺失8个（集中在3/6/9/12月附近，恰好是指数调整生效
+    月，对事件研究影响最大）。改为用 trade_cal 找每个自然月的最后一个
+    真实交易日，不再依赖日历日期本身。
     """
-    print("拉取沪深 300 历史成分股快照...")
+    print(f"拉取 {INDEX_CODE} 历史成分股快照...")
 
     today = pd.Timestamp.today()
-    # 生成从 START_DATE 到今天的每月最后一天列表
-    months = pd.date_range(
-        start=START_DATE, end=today, freq="ME"
-    )
+    cal = pro.trade_cal(exchange="SSE", start_date=START_DATE,
+                         end_date=today.strftime("%Y%m%d"), is_open="1")
+    trade_days = pd.to_datetime(sorted(cal["cal_date"]))
+    # 按自然月分组，取每组最后一个真实交易日
+    trade_days_s = pd.Series(trade_days)
+    months = (trade_days_s
+              .groupby(trade_days_s.dt.to_period("M"))
+              .max()
+              .tolist())
 
     all_records = []
     for i, month_end in enumerate(months):

@@ -1,5 +1,5 @@
 """
-中证500指数样本股定期调整效应诊断（事件研究，仅测核心前提）
+指数样本股定期调整效应诊断（事件研究，仅测核心前提，支持中证500/沪深300）
 
 背景：项目此前六轮40+方向+第七/八轮候选全部是"因子选股"类方案（固定权重
 因子组合），核心瓶颈是这类方案在A股风格切换下必然衰减。指数样本股调整效应
@@ -9,10 +9,11 @@
 海外市场文献已有大量记录，如标普500的index effect）。
 
 数据与方法：
-- 调入/调出名单：`hs500_members.parquet` 月末快照diff（用hs500而非hs300，
-  因为中证500样本调整数量更稳定，历次固定约50只调入50只调出）。
-  该文件由 fetch_index_members.py 生成，需要先跑一遍中证500版本
-  （INDEX_CODE=399905.SZ）才有数据，若不存在则本脚本报错退出。
+- 调入/调出名单：`hs500_members.parquet`（默认）或 `hs300_members.parquet`
+  （--index hs300）月末快照diff。中证500样本调整数量更稳定，历次固定约
+  50只调入50只调出；沪深300调整数量不固定，各次事件调入调出数不一定相等。
+  该文件由 fetch_index_members.py 生成，需要先跑一遍对应指数版本才有数据，
+  若不存在则本脚本报错退出。
 - 生效日：中证指数公司规则是"6月/12月第二个星期五的下一交易日"生效，
   用 trade_cal 计算历年该日期（已实测验证2016-2025年20次调整规律稳定，
   不依赖index_weight快照本身推断，是公开规则的直接计算）。
@@ -29,10 +30,12 @@
 
 用法：
   cd a_stock/backtest
-  python event_index_rebalance.py
+  python event_index_rebalance.py               # 默认中证500
+  python event_index_rebalance.py --index hs300  # 沪深300
 """
 
 import sys
+import argparse
 import pathlib
 import warnings
 
@@ -45,8 +48,19 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "data"))
 from fetch_index_members import init_pro, DATA_DIR, STOCK_DIR
 
-HS500_MEMBERS_FILE = DATA_DIR / "hs500_members.parquet"
-INDEX_CODE = "000905.SH"  # 中证500指数点位（区别于399905.SZ的成分股代码空间）
+# 指数配置：中证500 与 沪深300 共用同一套方法论（调整生效规则、公告近似窗口
+# 都是中证指数公司统一规则），用 --index 切换，避免复制整份脚本（DRY）。
+INDEX_CONFIGS = {
+    "hs500": {
+        "members_file": DATA_DIR / "hs500_members.parquet",
+        "index_code": "000905.SH",  # 中证500指数点位（区别于399905.SZ的成分股代码空间）
+    },
+    "hs300": {
+        "members_file": DATA_DIR / "hs300_members.parquet",
+        "index_code": "000300.SH",  # 沪深300指数点位
+    },
+}
+
 ANNOUNCE_LAG_TRADING_DAYS = 10  # 生效日前N个交易日近似代表公告日附近
 
 START_YEAR = 2016
@@ -89,8 +103,8 @@ def load_adjustment_events(members: pd.DataFrame) -> list[dict]:
     return events
 
 
-def load_index_daily(pro) -> pd.Series:
-    df = pro.index_daily(ts_code=INDEX_CODE, start_date="20160101", end_date="20261231",
+def load_index_daily(pro, index_code: str) -> pd.Series:
+    df = pro.index_daily(ts_code=index_code, start_date="20160101", end_date="20261231",
                           fields="trade_date,close")
     df["trade_date"] = pd.to_datetime(df["trade_date"])
     return df.set_index("trade_date")["close"].sort_index()
@@ -371,12 +385,20 @@ def summarize_net_return(df: pd.DataFrame) -> None:
 
 
 def main():
-    if not HS500_MEMBERS_FILE.exists():
-        print(f"缺少 {HS500_MEMBERS_FILE}，无法识别历次调入调出名单，脚本退出")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--index", choices=list(INDEX_CONFIGS), default="hs500",
+                         help="选择诊断哪个指数的样本股调整效应")
+    args = parser.parse_args()
+    cfg = INDEX_CONFIGS[args.index]
+    members_file = cfg["members_file"]
+    index_code = cfg["index_code"]
+
+    if not members_file.exists():
+        print(f"缺少 {members_file}，无法识别历次调入调出名单，脚本退出")
         return
 
     pro = init_pro()
-    members = pd.read_parquet(HS500_MEMBERS_FILE)
+    members = pd.read_parquet(members_file)
     members["trade_date"] = pd.to_datetime(members["trade_date"])
 
     events = load_adjustment_events(members)
@@ -386,7 +408,7 @@ def main():
         exchange="SSE", start_date="20160101", end_date="20261231", is_open="1"
     )["cal_date"].tolist()))
 
-    index_close = load_index_daily(pro)
+    index_close = load_index_daily(pro, index_code)
 
     rows = []
     for ev in events:
@@ -429,7 +451,7 @@ def main():
         print(f"  均值={mean:+.4%}  同向占比={same_sign:.1%}  n={len(clean)}事件  "
               f"t统计量={t_stat:.2f}  p值={p_val:.3f}")
 
-    out_dir = pathlib.Path(__file__).parent / "results" / "event_index_rebalance"
+    out_dir = pathlib.Path(__file__).parent / "results" / f"event_index_rebalance_{args.index}"
     out_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_dir / "events_summary.csv", index=False)
     print(f"\n结果已保存：{out_dir / 'events_summary.csv'}")
