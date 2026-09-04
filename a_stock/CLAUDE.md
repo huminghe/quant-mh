@@ -36,5 +36,5 @@
 
 - 券商选型、数据源、交易接口：`docs/broker_and_cost.md`
 - 跨策略通用的因子计算要点、回测工具选型：`docs/strategy_notes.md`
-- ETF 轮动策略细节：`docs/ETF轮动调研.md`；多因子选股策略细节（含风险控制规则）：`docs/多因子选股调研.md`
+- ETF 轮动策略细节：`docs/ETF轮动调研.md`；实盘/模拟盘表现记录：`docs/ETF轮动实盘_模拟盘记录.md`；多因子选股策略细节（含风险控制规则）：`docs/多因子选股调研.md`
 - A 股量化调研结论汇总：`docs/research.md`
