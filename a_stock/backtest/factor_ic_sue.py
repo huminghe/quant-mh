@@ -3,7 +3,7 @@ SUE（标准化盈余惊喜）因子截面IC验证
 
 来源：Li/Liu/Liu/Wei《Replicating and Digesting Anomalies in the Chinese
 A-Share Market》(Management Science, 2023) 候选清单第5项，详见
-a_stock/docs/research.md「指数增强策略」章节因子候选清单。
+a_stock/docs/research_index_enhancement.md「指数增强策略」章节因子候选清单。
 
 因子定义：SUE = (本季单季度EPS - 去年同季单季度EPS) / 近8个单季度差值的标准差。
 `financials/{ts_code}.parquet` 里的 eps 是当年累计值（YTD），不是单季度值，

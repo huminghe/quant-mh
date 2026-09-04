@@ -4,7 +4,7 @@
 来源：Li/Liu/Liu/Wei《Replicating and Digesting Anomalies in the Chinese
 A-Share Market》(Management Science, 2023)，trading frictions类异象在A股
 显著率32.17%，六大类里最强（与美股相反）。此前项目从未测试过该类因子，
-详见 a_stock/docs/research.md「指数增强策略」章节候选清单。
+详见 a_stock/docs/research_index_enhancement.md「指数增强策略」章节候选清单。
 
 三个因子均用现有 stock_daily（high/low/vol/amount）+ valuation_monthly
 （circ_mv）数据构造，不新增拉取：

@@ -1,7 +1,7 @@
 """
 股权激励限售股解禁事件研究（事件驱动信号，仅测核心前提）
 
-背景：指数增强第十一轮候选⑤（a_stock/docs/research.md「指数增强策略」
+背景：指数增强第十一轮候选⑤（a_stock/docs/research_index_enhancement.md「指数增强策略」
 第十一轮小节）。候选②（event_share_float_lockup.py）测的是share_float
 全部share_type聚合的大额解禁（total_ratio>=5%），事后核查发现该阈值下的
 显著结果136/137已经是股权激励限售流通主导——即候选②的假显著/真显著结论

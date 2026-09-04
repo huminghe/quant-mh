@@ -30,11 +30,12 @@
 
 ## 研究日志
 
-研究过程和结论统一追加到 `docs/research.md`（未拆分独立 research_log，因子/策略调研量级远小于 crypto，单文件即可）。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
+研究过程和结论按策略线拆分记录：ETF 轮动追加到 `docs/research_etf_rotation.md`，指数增强追加到 `docs/research_index_enhancement.md`；跨策略/跨项目通用内容留在 `docs/research.md`。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
 
 ## 参考文档
 
 - 券商选型、数据源、交易接口：`docs/broker_and_cost.md`
 - 跨策略通用的因子计算要点、回测工具选型：`docs/strategy_notes.md`
-- ETF 轮动策略细节：`docs/ETF轮动调研.md`；实盘/模拟盘表现记录：`docs/ETF轮动实盘_模拟盘记录.md`；多因子选股策略细节（含风险控制规则）：`docs/多因子选股调研.md`
-- A 股量化调研结论汇总：`docs/research.md`
+- ETF 轮动策略细节：`docs/ETF轮动调研.md`；调研日志：`docs/research_etf_rotation.md`；实盘/模拟盘表现记录：`docs/ETF轮动实盘_模拟盘记录.md`
+- 多因子选股（指数增强）策略细节（含风险控制规则）：`docs/多因子选股调研.md`；调研日志：`docs/research_index_enhancement.md`
+- 跨策略/跨项目通用调研结论：`docs/research.md`

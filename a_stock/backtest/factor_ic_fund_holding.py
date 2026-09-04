@@ -5,7 +5,7 @@
 限制——一季报/三季报（Q1/Q3）只披露前十大重仓股，半年报/年报（Q2/Q4）
 才披露基本完整的持仓（实测stk_mkv_ratio加总中位数99.99%）。用户确认
 方案：只用Q2/Q4数据，放弃季度频率。详见 fetch_fund_holding.py 头部
-注释及 a_stock/docs/research.md「指数增强策略」章节第十六轮记录。
+注释及 a_stock/docs/research_index_enhancement.md「指数增强策略」章节第十六轮记录。
 
 因子构造：每只个股在半年报截面上的"被基金持仓强度变化"：
   holding_ratio(t) = sum(基金i持有该股市值 * 该基金规模权重) / 该股流通市值

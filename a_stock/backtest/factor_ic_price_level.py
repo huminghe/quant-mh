@@ -3,7 +3,7 @@
 
 来源：Li/Liu/Liu/Wei《Replicating and Digesting Anomalies in the Chinese
 A-Share Market》(Management Science, 2023) 候选清单第4项，详见
-a_stock/docs/research.md「指数增强策略」章节因子候选清单。
+a_stock/docs/research_index_enhancement.md「指数增强策略」章节因子候选清单。
 
 因子定义：低价股 -> 高预期收益。但股价绝对值与市值高度相关（小市值股票往往
 股价也低），直接用股价会把小市值效应误判为股价水平效应，因此需要中性化：

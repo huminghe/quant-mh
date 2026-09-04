@@ -1,7 +1,7 @@
 """
 第十三轮：3个新候选信号的IC检验
 
-背景：候选池严谨复核（第十二轮，见research.md）确认现有集成信号仅
+背景：候选池严谨复核（第十二轮，见research_etf_rotation.md）确认现有集成信号仅
 crowding/vol_ratio/flow三个。本轮补测3个此前未系统检验过的新方向：
   1. 两融余额行业确认（margin_balance）：个股两融余额按申万行业聚合，
      月度环比变化率横截面排名。数据源margin_detail（2015年起）。

@@ -4,7 +4,7 @@
 背景：build_etf_sw_exposure.py 用 stock_sw_industry.parquet（申万一级，仅覆盖A股）
 给ETF持仓算行业暴露，导致55只港股通主题ETF（如恒生科技/创新药主题ETF）持仓全是
 xxxxx.HK代码，匹配率恒为0%，被机械地归入broad而非按其真实主题行业分类
-（见 a_stock/docs/research.md"申万一级行业分层抽样候选池"小节已知局限）。
+（见 a_stock/docs/research_etf_rotation.md"申万一级行业分层抽样候选池"小节已知局限）。
 
 修复：用 tushare ths_index(exchange="HK", type="I") 获取同花顺港股行业指数
 （区别于type="N"概念指数、type="S"特殊名单），再用 ths_member 拉取每个行业的

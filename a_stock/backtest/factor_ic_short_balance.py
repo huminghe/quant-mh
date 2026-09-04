@@ -4,7 +4,7 @@
 背景：与第十三轮已证伪的margin_balance因子区分——margin_balance用的是
 `rzrqye`（融资融券合计）且按行业聚合；本候选专用`rqye`（融券余额，单独
 字段，不含融资部分）、个股层面，是全新角度。详见 fetch_short_balance.py
-头部注释及 a_stock/docs/research.md 第十七轮记录。
+头部注释及 a_stock/docs/research_index_enhancement.md 第十七轮记录。
 
 数据可行性：margin_detail对沪深300+中证500历史成分股并集覆盖率88.1%
 （2024-03-29样本实测），2016年起数据基础已充分（>60%可行性红线）。

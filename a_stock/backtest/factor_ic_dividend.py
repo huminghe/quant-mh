@@ -4,7 +4,7 @@
 来源：MSCI《中国A股因子表现》2025年12月研报，A股高股息率因子持续跑赢，
 与低波动因子并列近年最强因子，动量因子反而最弱（与全球市场排序相反）。
 项目此前六轮40+方向+第七/八轮候选中从未测试过该因子，详见
-a_stock/docs/research.md「指数增强策略」章节新候选因子调研（2026-08-17）。
+a_stock/docs/research_index_enhancement.md「指数增强策略」章节新候选因子调研（2026-08-17）。
 
 因子来源：daily_basic `dv_ratio`（近12个月现金分红/最新总市值，tushare原生
 字段），月度快照直接取自 valuation_monthly.parquet，不需要额外拉取或滚动

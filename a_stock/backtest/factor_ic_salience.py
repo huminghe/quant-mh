@@ -5,7 +5,7 @@
 Evidence》(JFE 2021)；A股复现：Pacific-Basin Finance Journal 2024。
 投资者对个股历史收益"显眼程度"存在认知偏差，显眼的高收益被过度关注推高
 定价，随后收益走低。此前项目从未测试过该类因子，详见
-a_stock/docs/research.md「指数增强策略」章节候选清单。
+a_stock/docs/research_index_enhancement.md「指数增强策略」章节候选清单。
 
 因子构造（仅用现有stock_daily收盘价，零新增数据成本）：
 - 突显度函数：σ(r_is, r_s) = |r_is - r_s| / (|r_is| + |r_s| + θ)，θ=0.1

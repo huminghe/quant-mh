@@ -2,7 +2,7 @@
 股东增减持公告数据拉取（stk_holdertrade，全历史分页拉取）
 
 用于指数增强新候选方向调研：高管/大股东增持公告作为事件驱动信号。详见
-a_stock/docs/research.md「指数增强策略」新候选方向调研小节。
+a_stock/docs/research_index_enhancement.md「指数增强策略」新候选方向调研小节。
 
 已知接口特性（写入前已核查）：
 - 单次调用固定截断3000条，长区间必须用offset循环分页拉取，否则静默丢数据

@@ -5,7 +5,7 @@
 （用历史滚动因子收益/IC动态调整因子权重）与第六轮已证伪的"因子权重收缩
 正则化"（James-Stein风格τ网格，`factor_shrinkage_v1.py`）本质上是同一类
 自适应权重机制——第六轮结论：所有τ取值OOS均劣于固定基线，越自适应越差，
-与ETF轮动"信号不可削弱"结论同源（详见 a_stock/docs/research.md 第六轮
+与ETF轮动"信号不可削弱"结论同源（详见 a_stock/docs/research_index_enhancement.md 第六轮
 小节）。
 
 为避免直接搭建自适应权重系统重复验证已知失败模式，先做最低成本诊断：

@@ -2,7 +2,7 @@
 限售股解禁事件窗口日线数据拉取（daily，非复权，仅取解禁日前后约90自然日窗口）
 
 用于指数增强第十一轮候选②「限售股解禁强制平仓风险」事件研究。详见
-a_stock/docs/research.md「指数增强策略」第十一轮小节。
+a_stock/docs/research_index_enhancement.md「指数增强策略」第十一轮小节。
 
 设计说明：
 - 只拉解禁日前后窗口（不拉全历史），避免污染主 stock_daily 目录（那里存的是

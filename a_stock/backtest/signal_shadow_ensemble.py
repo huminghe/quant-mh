@@ -6,7 +6,7 @@ ML弱信号集成 —— 影子监控（不替换线上signal_today.py评分）
 1.235 vs 基线1.053），但样本仅6.5年，建议先小规模试用观察，不直接替换
 现有评分公式。本脚本与signal_today.py同期运行，额外计算"动量+集成信号
 连续打折"版本的目标持仓，写入独立日志与线上版对比，观察1-2个季度后再
-决定是否采用。详见 a_stock/docs/research.md 第十二轮小节。
+决定是否采用。详见 a_stock/docs/research_etf_rotation.md 第十二轮小节。
 """
 
 import sys

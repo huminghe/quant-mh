@@ -3,7 +3,7 @@ Ndp（净负债/总市值）因子截面IC验证
 
 来源：Li/Liu/Liu/Wei《Replicating and Digesting Anomalies in the Chinese
 A-Share Market》(Management Science, 2023) 候选清单第6项，详见
-a_stock/docs/research.md「指数增强策略」章节因子候选清单。
+a_stock/docs/research_index_enhancement.md「指数增强策略」章节因子候选清单。
 
 因子定义：Ndp = 净负债 / 总市值，净负债 = total_liab（总负债）- money_cap（货币资金）。
 此前 balancesheet 缓存缺 total_liab 字段，已用

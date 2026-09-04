@@ -2,7 +2,7 @@
 V3因子池 + 股息率因子 全子集消融（2026-08-17）
 
 背景：`factor_ic_dividend.py` 已验证股息率因子（dv_ratio）通过IC初筛且滚动
-36个月IC均值仍稳健（详见 a_stock/docs/research.md 第九轮）。但项目历史教训
+36个月IC均值仍稳健（详见 a_stock/docs/research_index_enhancement.md 第九轮）。但项目历史教训
 （v17 margin_balance，以及本项目v3消融本身验证的"turnover搭sue的车"案例）
 证明"个体IC通过初筛≠组合层面有真实增量贡献"，必须做全子集消融才能确认。
 

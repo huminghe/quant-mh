@@ -2,7 +2,7 @@
 可转债强赎事件数据拉取（cb_call全历史 + cb_basic正股映射）
 
 用于指数增强第十一轮候选③「可转债强制赎回/转股事件对正股冲击」事件研究。
-详见 a_stock/docs/research.md「指数增强策略」第十一轮小节。
+详见 a_stock/docs/research_index_enhancement.md「指数增强策略」第十一轮小节。
 
 数据与方法：
 - cb_basic：可转债基本信息（含ts_code到正股stk_code的映射），单次调用

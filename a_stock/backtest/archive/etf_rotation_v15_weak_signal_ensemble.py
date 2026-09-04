@@ -2,9 +2,9 @@
 第十二轮方向2：ML弱信号集成 —— 拥挤度 + 成交量确认 + 资金流 等权/IC加权集成
 
 背景：历史已单独验证过的横截面弱信号——
-  - 拥挤度（相关性代理）：干净数据复核后边际收益不显著（research.md 已移除）
-  - 成交量确认（MA5/MA20成交额比）：IC=0.015，无效（research.md 已排除）
-  - ETF资金净流量（反向假设）：IC=-0.062，组合层面0/11超基线，无效（research.md 已排除）
+  - 拥挤度（相关性代理）：干净数据复核后边际收益不显著（research_etf_rotation.md 已移除）
+  - 成交量确认（MA5/MA20成交额比）：IC=0.015，无效（research_etf_rotation.md 已排除）
+  - ETF资金净流量（反向假设）：IC=-0.062，组合层面0/11超基线，无效（research_etf_rotation.md 已排除）
 这三个信号单独都不足以采用，但都是横截面因子（不同于社融这类全市场共同
 信号，已确认"全体惩罚不改变排名"无效，不纳入本次集成）。本轮测试：多个
 弱信号简单集成（等权/IC加权线性组合）是否存在互补效应，能挖出单独测试
@@ -182,7 +182,7 @@ print(f"  份额数据覆盖：{share_matrix.shape[1] if not share_matrix.empty 
 
 rebal_dates = [d for d in get_rebalance_dates(close.index) if d >= pd.Timestamp(START_DATE)]
 
-# ── 1. 单独信号IC（作为对照，核对与research.md历史记录一致）────
+# ── 1. 单独信号IC（作为对照，核对与research_etf_rotation.md历史记录一致）────
 
 print("\n" + "=" * 80)
 print("诊断1：三个弱信号单独IC（月度截面Rank IC，对照历史记录）")

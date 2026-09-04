@@ -2,7 +2,7 @@
 新股发行/上市清单拉取（new_share）
 
 用于指数增强第十一轮候选①「新股/次新股上市初期资金流效应」调研。详见
-a_stock/docs/research.md「指数增强策略」第十一轮小节。
+a_stock/docs/research_index_enhancement.md「指数增强策略」第十一轮小节。
 
 已知接口特性（写入前已核查）：
 - 单次调用固定截断2000条，需offset循环分页（已实测：全历史合计约3016条，

@@ -1,6 +1,6 @@
 # ETF 轮动回测脚本索引
 
-41 个 `etf_rotation_*.py` 脚本的分类与定位。结论详见 `a_stock/docs/research.md`；本文件只做代码导航，不重复研究内容。
+41 个 `etf_rotation_*.py` 脚本的分类与定位。结论详见 `a_stock/docs/research_etf_rotation.md`；本文件只做代码导航，不重复研究内容。
 
 ## 活跃模块（`a_stock/backtest/` 根目录，8 个，互相 import，请勿移动）
 

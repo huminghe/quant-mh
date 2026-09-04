@@ -187,7 +187,7 @@ def main():
     print(f"回测区间：{nav.index[0].date()} → {nav.index[-1].date()}")
     stats = calc_stats(nav, "机械化候选池(成交额>1亿,连续6月)")
     print(pd.DataFrame([stats]).set_index("标的").to_string())
-    print("\n对照：生产标的池（45只手工圈定）全样本夏普 1.053（详见 docs/research.md）")
+    print("\n对照：生产标的池（45只手工圈定）全样本夏普 1.053（详见 docs/research_etf_rotation.md）")
 
 
 if __name__ == "__main__":

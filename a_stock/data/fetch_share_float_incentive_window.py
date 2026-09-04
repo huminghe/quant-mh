@@ -2,7 +2,7 @@
 股权激励限售股解禁事件窗口日线数据拉取（daily，非复权，仅取解禁日前后约90自然日窗口）
 
 用于指数增强第十一轮候选⑤「股权激励解锁减持信号」事件研究。详见
-a_stock/docs/research.md「指数增强策略」第十一轮小节。
+a_stock/docs/research_index_enhancement.md「指数增强策略」第十一轮小节。
 
 与候选②（fetch_share_float_window.py）的区别：
 - 候选②用share_float.parquet全部share_type聚合的total_ratio>=5%筛大额解禁；

@@ -3,7 +3,7 @@
 
 来源：用户要求调研新候选因子时提出的"盈利预期修正"方向。分析师预测明细
 接口 report_rc 限流10次/天不可用，改用业绩预告类型/幅度（forecast_vip）
-作为粗粒度替代，详见 a_stock/docs/research.md「指数增强策略」新候选因子
+作为粗粒度替代，详见 a_stock/docs/research_index_enhancement.md「指数增强策略」新候选因子
 调研小节。
 
 **已知局限，验证前已核实**：A股业绩预告只在业绩大幅变动时强制披露，是
