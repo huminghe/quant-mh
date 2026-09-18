@@ -1,12 +1,20 @@
 """
-可转债双低策略：信用过滤叠加 + 完整组合回测（Phase 2 + Phase 3）
+可转债双低策略：信用过滤叠加 + 完整组合回测 + 稳健性检验（Phase 2-5）
 
-承接 factor_ic_cb_lowprice.py 的Phase 1结论，做两件事：
+承接 factor_ic_cb_lowprice.py 的Phase 1结论，做五件事：
 1. 信用过滤叠加（Phase 2）：用PIT安全的正股ST状态 + 资产负债率过滤双低池，
    对比"双低+过滤" vs "双低不过滤"两个版本，重点看2023年前后违约密集期
 2. 完整组合回测+验收（Phase 3）：按 .claude/rules/trading-standards.md
    验收标准，样本内外拆分（以2022-01-01新规为分段点）输出年化收益/夏普/
    最大回撤/胜率盈亏比
+3. 滚动窗口稳健性检验（Phase 4）：绝对收益（strategy列）滚动24个月窗口，
+   检验Phase 3结论是否依赖2022-01-01这一个特定分段点
+4. 改用超额收益重新检验（Phase 4b）：strategy-benchmark剔除转债市场beta后
+   单独看双低因子选股能力（alpha）本身是否稳健
+5. 分段点敏感性检验（Phase 5）：逐季度扫描全部候选样本内外分段点，检验
+   Phase 3的"样本外夏普腰斩"判定是否只是2022-01-01这一个切点的偶然产物
+
+结论：证伪，不接入实盘。完整证据链和数据表格见 a_stock/docs/research_convertible_bond.md
 
 信用过滤设计（PIT安全）：
 - ST状态：用 cb_stk_namechange.parquet（tushare namechange历史区间）判断
