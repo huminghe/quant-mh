@@ -22,7 +22,7 @@
 | ETF 趋势轮动 | 30% | MiniQMT | 模拟盘已暂停，45只手工标的池已放弃；机械化431池+flow信号已上线，小仓位实盘监控中，候选池优化方向已穷尽（详细进度见 memory） |
 | 指数增强（多因子选股） | 30% | MiniQMT | 因子选股方向遇到较大困难；指数样本股调整效应（事件驱动）已通过完整验证待接入，为低频增量策略（详细进度见 memory） |
 | 商品期货 CTA | 30% | CTP + vnpy | 可复用加密货币趋势策略经验，下一开发方向 |
-| 可转债双低 | 10% | MiniQMT | 降低整体波动，需过滤低评级 |
+| 可转债双低 | - | MiniQMT | 已证伪，不接入实盘：IC初筛未过筛+信用过滤无效+样本外过拟合（详见 memory/docs） |
 
 ## 数据约定
 
@@ -30,7 +30,7 @@
 
 ## 研究日志
 
-研究过程和结论按策略线拆分记录：ETF 轮动追加到 `docs/research_etf_rotation.md`，指数增强追加到 `docs/research_index_enhancement.md`；跨策略/跨项目通用内容留在 `docs/research.md`。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
+研究过程和结论按策略线拆分记录：ETF 轮动追加到 `docs/research_etf_rotation.md`，指数增强追加到 `docs/research_index_enhancement.md`，可转债追加到 `docs/research_convertible_bond.md`；跨策略/跨项目通用内容留在 `docs/research.md`。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
 
 ## 参考文档
 
@@ -38,4 +38,5 @@
 - 跨策略通用的因子计算要点、回测工具选型：`docs/strategy_notes.md`
 - ETF 轮动策略细节：`docs/ETF轮动调研.md`；调研日志：`docs/research_etf_rotation.md`；实盘/模拟盘表现记录：`docs/ETF轮动实盘_模拟盘记录.md`
 - 多因子选股（指数增强）策略细节（含风险控制规则）：`docs/多因子选股调研.md`；调研日志：`docs/research_index_enhancement.md`
+- 可转债双低策略调研（已证伪）：`docs/research_convertible_bond.md`
 - 跨策略/跨项目通用调研结论：`docs/research.md`
