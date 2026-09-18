@@ -22,3 +22,12 @@ a_stock/data/fund_holding_cache/
 a_stock/data/short_balance_cache/
 a_stock/backtest/results/
 a_stock/.ipynb_checkpoints/
+
+# Qlib 专用虚拟环境（Python 3.9，与主项目 venv 隔离）
+venv_qlib/
+a_stock/qlib_data/
+a_stock/data/qlib_csv/
+a_stock/data/qlib_csv_stock/
+
+# Qlib GRU 训练产生的 mlflow 实验记录，可通过 qlib_gru_poc.py 重新训练复现
+a_stock/backtest/mlruns/
