@@ -13,8 +13,8 @@ ETF 轮动月度信号
 day_scores *= (0.5 + boost)，boost为flow的1-rank(pct=True)，与etf_rotation_v38_
 fundamental_signal_ablation.py验证的公式完全一致。历史背书：431池2016-2026
 全样本回测夏普0.590 vs 纯动量基线0.526，已通过滚动2年窗口稳健性检验
-（均值Δ+0.161，劣于基线占比20.7%）。上线后不再重启模拟盘观察，直接用小仓位
-实盘验证，因回测背书已覆盖全样本+滚动窗口，重复模拟盘验证边际价值低。
+（均值Δ+0.161，劣于基线占比20.7%）。当前为模拟盘监控（10%模拟计仓比例，
+未真实下单），持续观察实际信号表现。
 """
 
 import sys
@@ -36,6 +36,22 @@ DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
 CANDIDATES_FILE = DATA_DIR / "etf_all_candidates.parquet"
 BENCHMARK_FILE = DATA_DIR / "etf_benchmark.parquet"
 SIGNAL_LOG = pathlib.Path(__file__).parent / "results" / "signal_log.csv"
+
+
+def is_first_trading_day_of_month() -> bool:
+    """
+    判断今天是否为本月第一个交易日。cron固定每月1日触发，但1日可能是
+    周末/节假日，需要查交易日历跳过非首个交易日的重复运行。
+    """
+    pro = init_pro()
+    today = pd.Timestamp.today()
+    start = today.replace(day=1).strftime("%Y%m%d")
+    end = today.strftime("%Y%m%d")
+    cal = pro.trade_cal(exchange="SSE", start_date=start, end_date=end, is_open="1")
+    if cal.empty:
+        return False
+    first_open = cal["cal_date"].min()
+    return first_open == today.strftime("%Y%m%d")
 
 
 def load_candidate_codes() -> list:
@@ -141,6 +157,10 @@ def save_signal(date: str, holdings: list[str], scores: pd.Series) -> None:
 # ── 主流程 ────────────────────────────────────────────────
 
 def main():
+    if not is_first_trading_day_of_month():
+        print(f"{pd.Timestamp.today().date()} 不是本月第一个交易日，跳过本次运行")
+        return
+
     candidates = load_candidate_codes()
     names = load_etf_names()
 
