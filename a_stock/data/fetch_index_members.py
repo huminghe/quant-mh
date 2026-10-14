@@ -1,17 +1,24 @@
 """
-沪深 300 成分股日线数据获取
+指数成分股日线数据获取（沪深300/中证500/科创50/创业板指）
 - 拉取历史成分股变动（index_weight），按月快照构建 point-in-time 成分股列表
 - 下载所有出现过的成分股后复权日线数据，存 Parquet
 - 增量更新：只补全缺失的最新交易日
 
 目录结构：
   a_stock/data/stock_daily/{ts_code}.parquet   -- 个股日线
-  a_stock/data/hs300_members.parquet           -- 每月成分股快照（point-in-time）
+  a_stock/data/hs300_members.parquet           -- 沪深300每月成分股快照（point-in-time）
+  a_stock/data/hs500_members.parquet           -- 中证500每月成分股快照
+  a_stock/data/kc50_members.parquet            -- 科创50每月成分股快照
+  a_stock/data/cyb_members.parquet             -- 创业板指每月成分股快照
 
 用法：
   cd a_stock/data
-  python fetch_index_members.py             # 首次全量下载
-  python fetch_index_members.py --update    # 增量更新
+  python fetch_index_members.py                    # 首次全量下载（默认沪深300）
+  python fetch_index_members.py --index hs500       # 中证500
+  python fetch_index_members.py --index kc50        # 科创50（候选D窄基指数调整效应用）
+  python fetch_index_members.py --index cyb         # 创业板指
+  python fetch_index_members.py --update            # 增量更新（默认指数）
+  python fetch_index_members.py --index kc50 --update  # 增量更新指定指数
 """
 
 import os
@@ -28,12 +35,22 @@ import tushare as ts
 # ── 路径配置 ──────────────────────────────────────────────
 DATA_DIR    = pathlib.Path(__file__).parent
 STOCK_DIR   = DATA_DIR / "stock_daily"
-MEMBERS_FILE = DATA_DIR / "hs300_members.parquet"
 TOKEN_FILE  = pathlib.Path.home() / ".tushare_token"
 
-INDEX_CODE  = "000300.SH"   # 沪深 300
 START_DATE  = "20150101"
 DELAY       = 0.35           # 每次 API 请求间隔（秒）
+
+# 支持的指数：index_code（tushare指数代码）+ members_file（本地快照路径）
+# kc50/cyb 是候选D（窄基指数调整效应）新增，科创50/创业板指单次调入调出比例
+# 远高于沪深300（约10%/5% vs 3.7%），用于检验调整比例更高是否带来更强的
+# 价格冲击信号。中证1000不算窄基（1000只成分股，调整比例与中证500接近），
+# 本次不纳入。
+INDEX_REGISTRY = {
+    "hs300": {"index_code": "000300.SH", "members_file": DATA_DIR / "hs300_members.parquet", "start_date": "20150101"},
+    "hs500": {"index_code": "000905.SH", "members_file": DATA_DIR / "hs500_members.parquet", "start_date": "20150101"},
+    "kc50":  {"index_code": "000688.SH", "members_file": DATA_DIR / "kc50_members.parquet", "start_date": "20191230"},  # 科创50发布于2019-12-30
+    "cyb":   {"index_code": "399006.SZ", "members_file": DATA_DIR / "cyb_members.parquet", "start_date": "20150101"},
+}
 
 
 # ── Token / API 初始化 ────────────────────────────────────
@@ -55,7 +72,7 @@ def init_pro() -> ts.pro_api:
 
 # ── Step 1：拉取历史成分股快照 ────────────────────────────
 
-def fetch_index_members_history(pro) -> pd.DataFrame:
+def fetch_index_members_history(pro, index_code: str, start_date: str) -> pd.DataFrame:
     """
     拉取历史成分股月度权重快照（index_weight）。
     返回：trade_date（月末日期）、con_code（成分股代码）两列。
@@ -68,10 +85,10 @@ def fetch_index_members_history(pro) -> pd.DataFrame:
     月，对事件研究影响最大）。改为用 trade_cal 找每个自然月的最后一个
     真实交易日，不再依赖日历日期本身。
     """
-    print(f"拉取 {INDEX_CODE} 历史成分股快照...")
+    print(f"拉取 {index_code} 历史成分股快照...")
 
     today = pd.Timestamp.today()
-    cal = pro.trade_cal(exchange="SSE", start_date=START_DATE,
+    cal = pro.trade_cal(exchange="SSE", start_date=start_date,
                          end_date=today.strftime("%Y%m%d"), is_open="1")
     trade_days = pd.to_datetime(sorted(cal["cal_date"]))
     # 按自然月分组，取每组最后一个真实交易日
@@ -86,7 +103,7 @@ def fetch_index_members_history(pro) -> pd.DataFrame:
         date_str = month_end.strftime("%Y%m%d")
         try:
             df = pro.index_weight(
-                index_code=INDEX_CODE,
+                index_code=index_code,
                 trade_date=date_str,
                 fields="trade_date,con_code"
             )
@@ -110,9 +127,9 @@ def fetch_index_members_history(pro) -> pd.DataFrame:
 
 # ── Step 2：保存成分股快照 ────────────────────────────────
 
-def save_members(members: pd.DataFrame) -> None:
-    MEMBERS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    members.to_parquet(MEMBERS_FILE, index=False)
+def save_members(members: pd.DataFrame, members_file: pathlib.Path) -> None:
+    members_file.parent.mkdir(parents=True, exist_ok=True)
+    members.to_parquet(members_file, index=False)
     n_dates = members["trade_date"].nunique()
     n_stocks = members["con_code"].nunique()
     print(f"成分股快照已保存：{n_dates} 个月份，共 {n_stocks} 只历史成分股")
@@ -120,11 +137,13 @@ def save_members(members: pd.DataFrame) -> None:
 
 # ── Step 3：获取所有历史成分股列表 ───────────────────────
 
-def get_all_member_codes() -> list[str]:
-    """从已保存快照中提取所有出现过的成分股代码"""
-    if not MEMBERS_FILE.exists():
+def get_all_member_codes(members_file: pathlib.Path = None) -> list[str]:
+    """从已保存快照中提取所有出现过的成分股代码（默认沪深300，与原有调用方保持兼容）"""
+    if members_file is None:
+        members_file = INDEX_REGISTRY["hs300"]["members_file"]
+    if not members_file.exists():
         raise FileNotFoundError("成分股快照不存在，请先运行 fetch_index_members_history()")
-    members = pd.read_parquet(MEMBERS_FILE)
+    members = pd.read_parquet(members_file)
     return sorted(members["con_code"].unique().tolist())
 
 
@@ -204,10 +223,10 @@ def update_stock(pro, ts_code: str, today: str) -> str:
 
 # ── Step 5：批量更新所有成分股 ────────────────────────────
 
-def run_update_stocks(codes: list[str] = None, delay: float = DELAY) -> None:
+def run_update_stocks(codes: list[str] = None, delay: float = DELAY, members_file: pathlib.Path = None) -> None:
     pro = init_pro()
     if codes is None:
-        codes = get_all_member_codes()
+        codes = get_all_member_codes(members_file)
 
     today = pd.Timestamp.today().strftime("%Y%m%d")
     total = len(codes)
@@ -284,7 +303,7 @@ def load_members_pit(date: pd.Timestamp, members_file: pathlib.Path = None) -> l
     members_file: 成分股快照路径，默认为沪深300（hs300_members.parquet）
     """
     if members_file is None:
-        members_file = MEMBERS_FILE
+        members_file = INDEX_REGISTRY["hs300"]["members_file"]
     members = pd.read_parquet(members_file)
     members["trade_date"] = pd.to_datetime(members["trade_date"])
     # 取 <= date 的最近快照
@@ -298,23 +317,30 @@ def load_members_pit(date: pd.Timestamp, members_file: pathlib.Path = None) -> l
 # ── 入口 ──────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="沪深300成分股数据下载")
+    parser = argparse.ArgumentParser(description="指数成分股数据下载")
+    parser.add_argument("--index", choices=list(INDEX_REGISTRY), default="hs300",
+                        help="选择下载哪个指数的成分股（默认沪深300）")
     parser.add_argument("--update", action="store_true",
                         help="只更新已有数据，不重新拉成分股快照")
     parser.add_argument("--members-only", action="store_true",
                         help="只更新成分股快照，不下载个股数据")
     args = parser.parse_args()
 
+    cfg = INDEX_REGISTRY[args.index]
+    index_code = cfg["index_code"]
+    members_file = cfg["members_file"]
+    start_date = cfg["start_date"]
+
     pro = init_pro()
 
     if not args.update:
         # 全量：先拉成分股快照
-        members = fetch_index_members_history(pro)
-        save_members(members)
+        members = fetch_index_members_history(pro, index_code, start_date)
+        save_members(members, members_file)
 
     if not args.members_only:
         # 下载/更新个股日线
-        codes = get_all_member_codes()
+        codes = get_all_member_codes(members_file)
         print(f"\n共 {len(codes)} 只历史成分股需要下载")
         run_update_stocks(codes)
 

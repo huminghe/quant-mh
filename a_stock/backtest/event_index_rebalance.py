@@ -1,5 +1,5 @@
 """
-指数样本股定期调整效应诊断（事件研究，仅测核心前提，支持中证500/沪深300）
+指数样本股定期调整效应诊断（事件研究，仅测核心前提，支持中证500/沪深300/科创50）
 
 背景：项目此前六轮40+方向+第七/八轮候选全部是"因子选股"类方案（固定权重
 因子组合），核心瓶颈是这类方案在A股风格切换下必然衰减。指数样本股调整效应
@@ -8,20 +8,34 @@
 调入股/卖出调出股，这个提前建仓的资金流可能推高调入股价格（"指数效应"，
 海外市场文献已有大量记录，如标普500的index effect）。
 
+候选D（2026-10换源第十四轮新增）：科创50/创业板指等窄基指数单次调入调出
+比例远高于沪深300（科创50上限10% vs 沪深300约3.7%），检验调整比例更高是否
+带来更强的价格冲击信号——此前只测过沪深300（第九轮交叉验证，p=0.046较弱）
+和中证500（第九轮主测，p=0.003，已实盘方案），从未测过窄基指数，是真空白。
+
+⚠️ 科创50调整周期与沪深300/中证500不同（已查中证指数公司编制方案确认）：
+科创50是**季度调整**（3/6/9/12月第二个周五的下一交易日生效，比例上限10%），
+沪深300/中证500是**半年度调整**（仅6/12月）。不能直接复用`[6, 12]`月份过滤，
+必须按指数区分调整月份列表，否则会漏掉科创50的3月/9月调整事件。
+
 数据与方法：
-- 调入/调出名单：`hs500_members.parquet`（默认）或 `hs300_members.parquet`
-  （--index hs300）月末快照diff。中证500样本调整数量更稳定，历次固定约
-  50只调入50只调出；沪深300调整数量不固定，各次事件调入调出数不一定相等。
-  该文件由 fetch_index_members.py 生成，需要先跑一遍对应指数版本才有数据，
-  若不存在则本脚本报错退出。
-- 生效日：中证指数公司规则是"6月/12月第二个星期五的下一交易日"生效，
-  用 trade_cal 计算历年该日期（已实测验证2016-2025年20次调整规律稳定，
-  不依赖index_weight快照本身推断，是公开规则的直接计算）。
+- 调入/调出名单：`hs500_members.parquet`（默认）/`hs300_members.parquet`
+  （--index hs300）/`kc50_members.parquet`（--index kc50）月末快照diff。
+  中证500样本调整数量更稳定，历次固定约50只调入50只调出；沪深300调整数量
+  不固定；科创50单次调整1-5只不等（50只样本池，比例上限10%但实际调整数
+  2026年9月以前多在1-5只区间，样本量比宽基指数更小，统计功效需在结果里
+  一并评估）。该文件由 fetch_index_members.py 生成，需要先跑一遍对应指数
+  版本才有数据，若不存在则本脚本报错退出。
+- 生效日：中证指数公司规则，沪深300/中证500是"6月/12月第二个星期五的
+  下一交易日"生效，科创50是"3月/6月/9月/12月第二个星期五的下一交易日"
+  生效，用 trade_cal 计算历年该日期（沪深300/中证500已实测验证2016-2025
+  年20次调整规律稳定，不依赖index_weight快照本身推断，是公开规则的直接
+  计算；科创50规则来源：上证科创板50成份指数编制方案，中证指数公司官网）。
 - 公告日近似：中证指数公司规则是生效日前两周左右公告名单，本脚本用
   "生效日前10个交易日"作为窗口起点近似代表公告日附近（不是精确公告日，
   只是近似窗口，如果信号在这个窗口内不显著，可判定"提前买入"效应不存在，
   不需要更精确的公告日就能得出结论）。
-- 基准：中证500指数自身点位（index_daily），不用无效应对照组（YAGNI，
+- 基准：对应指数自身点位（index_daily），不用无效应对照组（YAGNI，
   指数本身就是最自然的基准）。
 
 先测前提（.claude/lessons.md 第99条方法论）：只算"公告日附近到生效日"窗口
@@ -32,6 +46,7 @@
   cd a_stock/backtest
   python event_index_rebalance.py               # 默认中证500
   python event_index_rebalance.py --index hs300  # 沪深300
+  python event_index_rebalance.py --index kc50   # 科创50（候选D）
 """
 
 import sys
@@ -48,22 +63,35 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "data"))
 from fetch_index_members import init_pro, DATA_DIR, STOCK_DIR
 
-# 指数配置：中证500 与 沪深300 共用同一套方法论（调整生效规则、公告近似窗口
-# 都是中证指数公司统一规则），用 --index 切换，避免复制整份脚本（DRY）。
+# 指数配置：三个指数共用同一套方法论（调整生效规则均是"当月第二个星期五的
+# 下一交易日"，都是中证指数公司统一规则），用 --index 切换，避免复制整份
+# 脚本（DRY）。adjust_months 区分沪深300/中证500的半年度调整 vs 科创50的
+# 季度调整（来源：上证科创板50成份指数编制方案，中证指数公司官网）。
+# start_year：科创50于2019-12-30发布，2020年才有第一次定期调整，早于此的
+# 年份没有数据，避免空转。
 INDEX_CONFIGS = {
     "hs500": {
         "members_file": DATA_DIR / "hs500_members.parquet",
         "index_code": "000905.SH",  # 中证500指数点位（区别于399905.SZ的成分股代码空间）
+        "adjust_months": [6, 12],
+        "start_year": 2016,
     },
     "hs300": {
         "members_file": DATA_DIR / "hs300_members.parquet",
         "index_code": "000300.SH",  # 沪深300指数点位
+        "adjust_months": [6, 12],
+        "start_year": 2016,
+    },
+    "kc50": {
+        "members_file": DATA_DIR / "kc50_members.parquet",
+        "index_code": "000688.SH",  # 科创50指数点位
+        "adjust_months": [3, 6, 9, 12],
+        "start_year": 2020,
     },
 }
 
 ANNOUNCE_LAG_TRADING_DAYS = 10  # 生效日前N个交易日近似代表公告日附近
 
-START_YEAR = 2016
 END_YEAR = 2025
 
 
@@ -77,12 +105,12 @@ def get_effective_date(trade_days: pd.DatetimeIndex, year: int, month: int) -> p
     return nxt[0]
 
 
-def load_adjustment_events(members: pd.DataFrame) -> list[dict]:
-    """按6月/12月月末快照diff识别历次调入调出名单"""
+def load_adjustment_events(members: pd.DataFrame, adjust_months: list[int], start_year: int) -> list[dict]:
+    """按指数自身调整月份列表做月末快照diff，识别历次调入调出名单"""
     snap_dates = sorted(members["trade_date"].unique())
     events = []
-    for year in range(START_YEAR, END_YEAR + 1):
-        for month in [6, 12]:
+    for year in range(start_year, END_YEAR + 1):
+        for month in adjust_months:
             target = [d for d in snap_dates if pd.Timestamp(d).year == year and pd.Timestamp(d).month == month]
             prev_candidates = [d for d in snap_dates if pd.Timestamp(d) < min(target, default=pd.Timestamp.max)]
             if not target or not prev_candidates:
@@ -288,12 +316,12 @@ def limit_up_check(events: list[dict], trade_days: pd.DatetimeIndex) -> pd.DataF
 
 # ── 容量与年化贡献量级估算 ──────────────────────────────────────
 #
-# 这是低频事件策略（每年仅2次调整，每次持有约9-10个交易日），不是全时段
-# 持仓策略。年化贡献估算口径：单次事件净超额收益 × 每年事件数(2)，
-# 代表"若每次事件都用同一笔资金参与"这部分资金的年化超额贡献
-# （不代表整个组合的年化收益，因为这笔资金一年里大部分时间空闲，
-# 可与其他策略共用，YAGNI——不在本脚本里设计资金复用方案）。
-EVENTS_PER_YEAR = 2
+# 这是低频事件策略（沪深300/中证500每年2次调整，科创50每年4次调整，每次
+# 持有约9-10个交易日），不是全时段持仓策略。年化贡献估算口径：单次事件净
+# 超额收益 × 每年事件数（按--index取对应adjust_months长度），代表"若每次
+# 事件都用同一笔资金参与"这部分资金的年化超额贡献（不代表整个组合的年化
+# 收益，因为这笔资金一年里大部分时间空闲，可与其他策略共用，YAGNI——不在
+# 本脚本里设计资金复用方案）。
 
 
 def load_daily_amount(ts_code: str) -> pd.Series:
@@ -336,7 +364,7 @@ def capacity_estimate(events: list[dict], trade_days: pd.DatetimeIndex) -> float
     return per_stock_capacity * 50  # 50只同时建仓的组合总容量
 
 
-def summarize_capacity(net_df: pd.DataFrame, limit_df: pd.DataFrame, capacity_yuan: float) -> None:
+def summarize_capacity(net_df: pd.DataFrame, limit_df: pd.DataFrame, capacity_yuan: float, events_per_year: int) -> None:
     print("\n=== 容量与年化贡献量级估算 ===")
     best = net_df[net_df["exit_offset"] == -1]
     gross_mean = best["gross_excess"].mean()
@@ -348,10 +376,10 @@ def summarize_capacity(net_df: pd.DataFrame, limit_df: pd.DataFrame, capacity_yu
     print(f"  gross超额收益均值 = {gross_mean:+.4%}")
     print(f"  net超额收益均值（扣完整回合成本{ROUND_TRIP_COST:.3%}） = {net_mean:+.4%}")
     print(f"  net超额收益均值（再扣涨停不可执行比例{blocked_pct:.1%}折算） = {net_after_limit:+.4%}")
-    print(f"\n年化贡献估算（{EVENTS_PER_YEAR}次事件/年，同一笔资金参与）：")
-    print(f"  gross年化贡献 ≈ {gross_mean * EVENTS_PER_YEAR:+.4%}")
-    print(f"  net年化贡献 ≈ {net_mean * EVENTS_PER_YEAR:+.4%}")
-    print(f"  net年化贡献（含涨跌停折算） ≈ {net_after_limit * EVENTS_PER_YEAR:+.4%}")
+    print(f"\n年化贡献估算（{events_per_year}次事件/年，同一笔资金参与）：")
+    print(f"  gross年化贡献 ≈ {gross_mean * events_per_year:+.4%}")
+    print(f"  net年化贡献 ≈ {net_mean * events_per_year:+.4%}")
+    print(f"  net年化贡献（含涨跌停折算） ≈ {net_after_limit * events_per_year:+.4%}")
     if pd.notna(capacity_yuan):
         print(f"\n容量估算（单只个股不超日均成交额10%，50只等权）：约 {capacity_yuan / 1e8:.2f} 亿元/次事件")
     else:
@@ -392,6 +420,9 @@ def main():
     cfg = INDEX_CONFIGS[args.index]
     members_file = cfg["members_file"]
     index_code = cfg["index_code"]
+    adjust_months = cfg["adjust_months"]
+    start_year = cfg["start_year"]
+    events_per_year = len(adjust_months)
 
     if not members_file.exists():
         print(f"缺少 {members_file}，无法识别历次调入调出名单，脚本退出")
@@ -401,8 +432,8 @@ def main():
     members = pd.read_parquet(members_file)
     members["trade_date"] = pd.to_datetime(members["trade_date"])
 
-    events = load_adjustment_events(members)
-    print(f"识别到 {len(events)} 次调整事件（{START_YEAR}-{END_YEAR}）")
+    events = load_adjustment_events(members, adjust_months, start_year)
+    print(f"识别到 {len(events)} 次调整事件（{start_year}-{END_YEAR}，调整月份={adjust_months}）")
 
     trade_days = pd.to_datetime(sorted(pro.trade_cal(
         exchange="SSE", start_date="20160101", end_date="20261231", is_open="1"
@@ -467,7 +498,7 @@ def main():
     print(f"\n涨跌停检查结果已保存：{out_dir / 'limit_up_check.csv'}")
 
     capacity_yuan = capacity_estimate(events, trade_days)
-    summarize_capacity(net_df, limit_df, capacity_yuan)
+    summarize_capacity(net_df, limit_df, capacity_yuan, events_per_year)
 
 
 if __name__ == "__main__":
