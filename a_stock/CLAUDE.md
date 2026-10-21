@@ -21,10 +21,12 @@
 
 | 策略 | 仓位 | 接口 | 优先级 |
 |------|------|------|--------|
-| ETF 趋势轮动 | 30% | MiniQMT | 45只手工标的池模拟盘已暂停并放弃；机械化431池+flow信号模拟盘监控中（未真实下单），候选池优化（问题①）、基本面选股（问题②）均已穷尽；第十四轮四类源换源调研（2026-10-14）候选A行业残差动量/候选D科创50窄基调整效应均证伪，当前倾向转向观察模拟盘表现，暂不再主动投入新方向（详细进度见 memory） |
+| ETF 趋势轮动 | 30% | MiniQMT | 45只手工标的池模拟盘已暂停并放弃；机械化431池+flow信号模拟盘监控中（未真实下单），候选池优化（问题①）、基本面选股（问题②）均已穷尽；第十四轮四类源换源调研（2026-10-14）候选A行业残差动量/候选D科创50窄基调整效应均证伪；第十五轮股指期货对冲beta中性验证（2026-10-19）：统计上证明组合存在真实alpha（对冲后仅损失1-2pp年化），但百万级资金规模下所需对冲手数仅0.06-0.11手，与1手最小交易单位有9-16倍规模鸿沟，操作不可行，暂不投入；当前倾向转向观察模拟盘表现，暂不再主动投入新方向（详细进度见 memory） |
 | 指数增强（多因子选股） | 30% | MiniQMT | 因子选股方向遇到较大困难；指数样本股调整效应（事件驱动）已通过完整验证待接入（等6月/12月真实调整窗口做端到端验证）；"确定性事件+被动资金流"子类累计测13个候选仅1个通过，已基本穷尽；第五十二轮四类换源来源（海外机构研报/学术论文/博客社区/国内量化社区+交易所公告清单）全部重测，命中率0%，四类来源均已穷尽，换源调研暂无新待办方向，累计已排除52类以上（2026-10-14，详细进度见 memory 和 `docs/research_index_enhancement.md`） |
 | 商品期货 CTA | 30% | CTP + vnpy | 可复用加密货币趋势策略经验，下一开发方向 |
 | 可转债双低 | - | MiniQMT | 已证伪，不接入实盘：IC初筛未过筛+信用过滤无效+样本外过拟合（详见 memory/docs） |
+| 期权备兑开仓 | - | 期权经营机构 | "ETF轮动增强层"设计已证伪（2026-10-19）：实盘持仓命中有期权标的比例仅5.6%，动量轮动与备兑开仓标的筛选目标结构性相悖；若要做须单开独立策略线（固定持有宽基ETF不参与轮动），暂不投入（详见 `docs/research_options_covered_call.md`） |
+| 北向资金持仓跟随 | - | - | 已证伪，不接入实盘（2026-10-19）：行业配置变体无数据源；个股Top50变体赖以成立的日频持仓数据已被交易所永久停发（上证发〔2024〕106号，2024-08-19生效），当前仅季度快照，非数据商问题无替代渠道（详见 `docs/research_northbound_following.md`） |
 
 ## 数据约定
 
@@ -32,7 +34,7 @@
 
 ## 研究日志
 
-研究过程和结论按策略线拆分记录：ETF 轮动追加到 `docs/research_etf_rotation.md`，指数增强追加到 `docs/research_index_enhancement.md`，可转债追加到 `docs/research_convertible_bond.md`；跨策略/跨项目通用内容留在 `docs/research.md`。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
+研究过程和结论按策略线拆分记录：ETF 轮动追加到 `docs/research_etf_rotation.md`，指数增强追加到 `docs/research_index_enhancement.md`，可转债追加到 `docs/research_convertible_bond.md`，期权备兑追加到 `docs/research_options_covered_call.md`，北向资金跟随追加到 `docs/research_northbound_following.md`；跨策略/跨项目通用内容留在 `docs/research.md`。格式规范参考 `crypto/docs/background/research_workflow.md`（数据范围/测试规模/参数选择理由/过拟合风险等要素）。
 
 ## 参考文档
 
@@ -41,4 +43,6 @@
 - ETF 轮动策略细节：`docs/ETF轮动调研.md`；调研日志：`docs/research_etf_rotation.md`；实盘/模拟盘表现记录：`docs/ETF轮动实盘_模拟盘记录.md`
 - 多因子选股（指数增强）策略细节（含风险控制规则）：`docs/多因子选股调研.md`；调研日志：`docs/research_index_enhancement.md`
 - 可转债双低策略调研（已证伪）：`docs/research_convertible_bond.md`
+- 期权备兑开仓调研（待验证）：`docs/research_options_covered_call.md`
+- 北向资金跟随调研（待验证）：`docs/research_northbound_following.md`
 - 跨策略/跨项目通用调研结论：`docs/research.md`
