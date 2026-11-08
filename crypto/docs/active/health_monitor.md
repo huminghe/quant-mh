@@ -5,6 +5,8 @@
 > **与 `pause_mechanism.md` 的关系**：本文档是**月度健康度监控**（滚动盈亏比/胜率，判断策略是否系统性退化），`pause_mechanism.md` 是**事件驱动的短期暂停机制**（大跌+高波动触发）。两者互补，不是替代关系。
 >
 > **标的状态更新**：最新标的决策见 `token_selection_framework.md`，多标的组合分析见 `docs/active/multi_asset_combination_analysis.md`（2026-05-22 更新）。
+>
+> **"审查后是否该暂停"这个问题的完整决策过程（给别人讲解时看这个）**：`pause_review_summary.md`。下方触发规则表是该总结文档的落地产物。
 
 ## 当前状态（2026-10-21，整体覆盖重写，不追加）
 

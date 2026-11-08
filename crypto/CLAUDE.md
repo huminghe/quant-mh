@@ -89,6 +89,7 @@
 **active/**（当前决策依据，保持最新）
 - 暂停机制：`docs/active/pause_mechanism.md`
 - 健康度监控：`docs/active/health_monitor.md`
+- "审查后是否该暂停"决策总结（自包含，讲解入口）：`docs/active/pause_review_summary.md`
 - 验证结论索引（高频查阅，保持同步）：`docs/active/validation_results.md`
 - 策略版本性能对比与当前部署配置：`docs/active/strategy_versions.md`
 - 多标的多策略组合分析（研究过程）：`docs/active/multi_asset_combination_analysis.md`
