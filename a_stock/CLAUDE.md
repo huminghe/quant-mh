@@ -38,6 +38,7 @@
 
 ## 参考文档
 
+- **四条策略线状态总览（查询入口）**：`docs/status_overview.md`
 - 券商选型、数据源、交易接口：`docs/broker_and_cost.md`
 - 跨策略通用的因子计算要点、回测工具选型：`docs/strategy_notes.md`
 - ETF 轮动策略细节：`docs/ETF轮动调研.md`；调研日志：`docs/research_etf_rotation.md`；实盘/模拟盘表现记录：`docs/ETF轮动实盘_模拟盘记录.md`
