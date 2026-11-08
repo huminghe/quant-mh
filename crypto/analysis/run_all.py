@@ -20,7 +20,7 @@ from analysis_core import run_all, scan_files_auto
 
 
 ANALYSES = [
-    {"title": "多标的策略分析",   "asset": None,  "exclude": {"DOGE_ema"}},
+    {"title": "多标的策略分析",   "asset": None,  "exclude": None},
     {"title": "BTC多版本策略分析", "asset": "BTC", "exclude": None},
     {"title": "ETH多版本策略分析", "asset": "ETH", "exclude": None},
     {"title": "SOL多版本策略分析", "asset": "SOL", "exclude": None},

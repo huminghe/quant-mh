@@ -5,9 +5,8 @@
 **/.claude/backups/
 **/.claude/HANDOFF.md
 __pycache__/
-# 分析结果目录：排除大文件，保留 MD 结论、解读和 PNG 图表
-crypto/analysis/**/charts_*/*.html
-crypto/analysis/**/charts_*/*.xlsx
+# 分析结果目录：全部生成产物（图表/报告），不入库
+crypto/analysis/reports/
 
 # A股原始数据：可通过 fetch_*.py 重新拉取，不入库
 a_stock/data/*.parquet
