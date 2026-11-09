@@ -94,6 +94,7 @@
 - 策略版本性能对比与当前部署配置：`docs/active/strategy_versions.md`
 - 多标的多策略组合分析（研究过程）：`docs/active/multi_asset_combination_analysis.md`
 - 代币选择框架：`docs/active/token_selection_framework.md`
+- 市场趋势性/波动性调研与方法论改进（自包含，讲解入口）：`docs/active/market_trend_methodology_2026_11.md`
 - 研究日志：`docs/active/strategy_research_log.md`
 
 **background/**（背景理解，偶尔查阅）
