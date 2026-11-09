@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import numpy as np
 import pandas as pd
 
-from trend_persistence_signal import adx, efficiency_ratio, ASSETS, SYMBOL_MAP
+from trend_persistence_signal import adx, efficiency_ratio, garman_klass_variance_series, ASSETS, SYMBOL_MAP
 from market_trend_volatility_check import fetch_ohlcv, atr_pct, BARS_PER_DAY, MAX_FETCH_DAYS
 
 ANNUALIZE_DAYS = 365
@@ -31,7 +31,7 @@ ANNUALIZE_DAYS = 365
 
 def monthly_table(df: pd.DataFrame, bars_per_day: float, months: int) -> pd.DataFrame:
     close = df["close"]
-    log_ret = np.log(close).diff()
+    gk_var = garman_klass_variance_series(df)  # 2026-11-09：波动率估计量从收盘价std换成Garman-Klass
     adx_n = max(int(round(14 * bars_per_day)), 3)
     er_n = max(int(round(30 * bars_per_day)), 5)
 
@@ -41,7 +41,7 @@ def monthly_table(df: pd.DataFrame, bars_per_day: float, months: int) -> pd.Data
     periods_per_year = bars_per_day * ANNUALIZE_DAYS
 
     frame = pd.DataFrame({
-        "log_ret": log_ret,
+        "gk_var": gk_var,
         "adx": adx_series,
         "er": er_series,
         "atr_pct": atr_series,
@@ -49,11 +49,11 @@ def monthly_table(df: pd.DataFrame, bars_per_day: float, months: int) -> pd.Data
     frame["ym"] = frame.index.to_period("M")
 
     grouped = frame.groupby("ym").agg(
-        vol_annualized=("log_ret", lambda s: s.std() * np.sqrt(periods_per_year) * 100),
+        vol_annualized=("gk_var", lambda s: np.sqrt(s.mean() * periods_per_year) * 100),
         adx=("adx", "mean"),
         er=("er", "mean"),
         atr_pct=("atr_pct", "mean"),
-        n_bars=("log_ret", "count"),
+        n_bars=("gk_var", "count"),
     )
     return grouped.tail(months + 1).iloc[:-1] if len(grouped) > months else grouped.iloc[:-1]
 

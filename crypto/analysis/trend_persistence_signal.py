@@ -42,6 +42,13 @@ SYMBOL_MAP = {"BTC": "BTC/USDT", "ETH": "ETH/USDT", "SOL": "SOL/USDT", "DOGE": "
 
 ROLL_WINDOW_DAYS = 30  # 指标滚动窗口，月末采样对齐月度PnL
 
+# 2026-11-09方法论改进：历史基线从"全历史均值"改为"滚动3年+分位数"，
+# 废弃借用自盈亏比监控场景、未经校验的0.85/1.15比例阈值。
+HIST_WINDOW_DAYS = 365 * 3  # 滚动历史基线窗口，3年
+PCT_LOW = 25                 # 近期值落在3年分布<25分位 → 判定"显著低/减弱"
+PCT_HIGH = 75                # 近期值落在3年分布>75分位 → 判定"显著高/更频繁"
+ROLLING_STEP = 5             # 滚动分布滑动步长，跳步计算兼顾速度与分位数精度
+
 
 def fetch_daily_ohlcv(symbol: str) -> pd.DataFrame:
     print(f"  拉取 {symbol} 日线...", end=" ", flush=True)
@@ -117,6 +124,48 @@ def efficiency_ratio(close: pd.Series, n: int) -> pd.Series:
     net_change = (close - close.shift(n)).abs()
     path_sum = close.diff().abs().rolling(n).sum()
     return net_change / path_sum
+
+
+def garman_klass_variance_series(df: pd.DataFrame) -> pd.Series:
+    """逐bar Garman-Klass方差分量（未年化）。比收盘价std估计量统计效率高约5倍，
+    用OHLC四价而非只用收盘价。加密货币24/7无隔夜跳空，不需要Yang-Zhang改进版。
+    边界：H=L且C=O（无波动bar）时两项均为0，不产生负数/NaN（前提OHLC关系合法）。
+    """
+    log_hl = np.log(df["high"] / df["low"])
+    log_co = np.log(df["close"] / df["open"])
+    return 0.5 * log_hl**2 - (2 * np.log(2) - 1) * log_co**2
+
+
+def rolling_window_distribution(series: pd.Series, window_n: int, agg_func, step: int = ROLLING_STEP) -> np.ndarray:
+    """在历史序列上用与近期窗口同长度(window_n)滑动，每个子窗口算一次agg_func，
+    得到"同口径"历史分布，用于分位数判断。step跳步减少高频框架上的计算量。
+    口径必须与近期窗口一致（均为window_n长度的汇总值分布，不是逐bar瞬时值分布），
+    否则均值的离散度被低估，分位数会失真。
+    """
+    vals = series.values
+    n = len(vals)
+    if n < window_n:
+        return np.array([])
+    starts = range(0, n - window_n + 1, step)
+    results = []
+    for s in starts:
+        window = vals[s: s + window_n]
+        if np.isnan(window).any():
+            continue
+        results.append(agg_func(window))
+    return np.array([r for r in results if not np.isnan(r)])
+
+
+def percentile_of_recent(recent_value: float, hist_dist: np.ndarray) -> float | None:
+    """recent_value在hist_dist经验分布中的百分位(0-100)，口径对齐
+    scipy.stats.percentileofscore(kind='mean')（弱排名与强排名取平均）。
+    样本不足（<10个有效窗口）时返回None，避免用噪音很大的分位数冒充可信判断。
+    """
+    if hist_dist is None or len(hist_dist) < 10 or recent_value is None or np.isnan(recent_value):
+        return None
+    strict = (hist_dist < recent_value).sum()
+    weak = (hist_dist <= recent_value).sum()
+    return (strict + weak) / 2 / len(hist_dist) * 100
 
 
 def monthly_signal_series(df: pd.DataFrame) -> list[tuple]:
