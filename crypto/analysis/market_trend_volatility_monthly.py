@@ -8,12 +8,17 @@
 默认跑1d/8h/4h/1h四档（与 market_trend_volatility_check.py 的 --timeframes 覆盖范围一致）。
 复用 market_trend_volatility_check.py 的拉取/指标函数。
 
-2026-11-09方法论改进：每月除了原始绝对值（年化波动率%、ADX等），新增该月汇总值
+2026-11-09方法论改进：每月除了原始绝对值（年化波动率%、ADX、ER等），新增该月汇总值
 相对"滚动3年基线同口径分布"的分位数列（与 market_trend_volatility_check.py 第4.1节
 同一套 rolling_window_distribution/percentile_of_recent 方法），避免只看绝对值无法
 判断"这个月在历史上算不算极端"的问题——单位统一成分位数后才能和4.1节的结论直接对比。
 分位数计算需要该月之前至少 hist_years 年的历史数据，故默认拉取窗口扩大到约4年
 （3年基线 + 1年逐月展示窗口），--months 可指定展示的月数（不是拉取范围）。
+
+ADX和ER分位数不是互相验证关系：ADX只看"方向是否反转"（净方向占优程度），
+ER看"路径走得直不直"（净位移/总路径长度）。同方向但折返剧烈（ADX高、ER低）
+和真正的大趋势（ADX高、ER高）在ADX上读数相近，必须结合ER才能区分，
+单独用ADX判断趋势性会漏掉"走势是否迂回"这个对趋势策略止损消耗更直接的维度。
 
 用法：
   python market_trend_volatility_monthly.py                       # 默认1d,8h,4h,1h，最近36个月
@@ -87,7 +92,7 @@ def monthly_table(df: pd.DataFrame, bars_per_day: float, months: int) -> pd.Data
     def vol_agg(window: np.ndarray) -> float:
         return np.sqrt(np.mean(window) * periods_per_year) * 100
 
-    vol_pcts, adx_pcts = [], []
+    vol_pcts, adx_pcts, er_pcts = [], [], []
     for ym in table.index:
         month_end_idx = frame.index.get_indexer([ym.end_time], method="pad")[0]
         month_start_idx = frame.index.get_indexer([ym.start_time], method="backfill")[0]
@@ -95,15 +100,19 @@ def monthly_table(df: pd.DataFrame, bars_per_day: float, months: int) -> pd.Data
         if hist_start >= month_start_idx or month_start_idx - hist_start < hist_window_n:
             vol_pcts.append(None)
             adx_pcts.append(None)
+            er_pcts.append(None)
             continue
         hist_slice = slice(hist_start, month_start_idx)
         window_n = month_end_idx - month_start_idx + 1
         vol_dist = rolling_window_distribution(gk_var.iloc[hist_slice], window_n, vol_agg)
         adx_dist = rolling_window_distribution(adx_series.iloc[hist_slice], window_n, np.mean)
+        er_dist = rolling_window_distribution(er_series.iloc[hist_slice], window_n, np.mean)
         vol_pcts.append(percentile_of_recent(table.loc[ym, "vol_annualized"], vol_dist))
         adx_pcts.append(percentile_of_recent(table.loc[ym, "adx"], adx_dist))
+        er_pcts.append(percentile_of_recent(table.loc[ym, "er"], er_dist))
     table["vol_percentile"] = vol_pcts
     table["adx_percentile"] = adx_pcts
+    table["er_percentile"] = er_pcts
     return table
 
 
@@ -122,26 +131,28 @@ def run_timeframe(timeframe: str, months: int) -> None:
 
     for asset, t in tables.items():
         print(f"\n--- {asset} ({timeframe}) ---")
-        print(f"{'月份':<10} {'年化波动率%':>10} {'波动率分位':>8} {'ADX':>8} {'ADX分位':>8} {'ER':>8} {'ATR%':>8} {'K线数':>6}")
+        print(f"{'月份':<10} {'年化波动率%':>10} {'波动率分位':>8} {'ADX':>8} {'ADX分位':>8} {'ER':>8} {'ER分位':>8} {'ATR%':>8} {'K线数':>6}")
         for ym, row in t.iterrows():
             print(f"{str(ym):<10} {row['vol_annualized']:>10.1f} {pct_str(row['vol_percentile']):>8} "
                   f"{row['adx']:>8.1f} {pct_str(row['adx_percentile']):>8} "
-                  f"{row['er']:>8.3f} {row['atr_pct']:>8.2f} {row['n_bars']:>6.0f}")
+                  f"{row['er']:>8.3f} {pct_str(row['er_percentile']):>8} {row['atr_pct']:>8.2f} {row['n_bars']:>6.0f}")
 
     print(f"\n--- {timeframe} 跨标的月度均值 ---")
     all_months = sorted(set().union(*[set(t.index) for t in tables.values()]))
-    print(f"{'月份':<10} {'年化波动率%':>10} {'波动率分位':>8} {'ADX':>8} {'ADX分位':>8} {'ER':>8} {'ATR%':>8}")
+    print(f"{'月份':<10} {'年化波动率%':>10} {'波动率分位':>8} {'ADX':>8} {'ADX分位':>8} {'ER':>8} {'ER分位':>8} {'ATR%':>8}")
     for ym in all_months:
         vols = [tables[a].loc[ym, "vol_annualized"] for a in ASSETS if ym in tables[a].index]
         vol_ps = [tables[a].loc[ym, "vol_percentile"] for a in ASSETS if ym in tables[a].index and tables[a].loc[ym, "vol_percentile"] is not None]
         adxs = [tables[a].loc[ym, "adx"] for a in ASSETS if ym in tables[a].index]
         adx_ps = [tables[a].loc[ym, "adx_percentile"] for a in ASSETS if ym in tables[a].index and tables[a].loc[ym, "adx_percentile"] is not None]
         ers = [tables[a].loc[ym, "er"] for a in ASSETS if ym in tables[a].index]
+        er_ps = [tables[a].loc[ym, "er_percentile"] for a in ASSETS if ym in tables[a].index and tables[a].loc[ym, "er_percentile"] is not None]
         atrs = [tables[a].loc[ym, "atr_pct"] for a in ASSETS if ym in tables[a].index]
         vol_p_str = f"{np.mean(vol_ps):.0f}%" if vol_ps else "样本不足"
         adx_p_str = f"{np.mean(adx_ps):.0f}%" if adx_ps else "样本不足"
+        er_p_str = f"{np.mean(er_ps):.0f}%" if er_ps else "样本不足"
         print(f"{str(ym):<10} {np.mean(vols):>10.1f} {vol_p_str:>8} {np.mean(adxs):>8.1f} {adx_p_str:>8} "
-              f"{np.mean(ers):>8.3f} {np.mean(atrs):>8.2f}")
+              f"{np.mean(ers):>8.3f} {er_p_str:>8} {np.mean(atrs):>8.2f}")
 
 
 def main():
