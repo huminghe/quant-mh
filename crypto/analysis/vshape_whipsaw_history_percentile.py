@@ -111,7 +111,11 @@ def window_er_and_path(close: pd.Series, start: pd.Timestamp, end: pd.Timestamp)
 def sample_non_cluster_windows(close: pd.Series, cluster_windows: list[tuple], window_n_days: float,
                                 n_samples: int, rng: np.random.Generator) -> list[tuple]:
     """在价格序列里随机抽取与换向簇窗口等长的非换向簇时间段（起点避开所有
-    已知簇窗口±该窗口长度的缓冲区，避免抽样污染）。"""
+    已知簇窗口±该窗口长度的缓冲区，避免抽样污染）。
+    重叠判断用标准区间重叠条件(start<=e and end>=s)，覆盖"forbidden区间
+    被抽样窗口完全包含"的情况（2026-11-11修复：原判断只检查端点是否落在
+    forbidden内，会漏判这种包含关系，导致部分已知簇窗口被误判为非换向簇
+    混入对照组）。"""
     idx = close.index
     total = len(idx)
     window_td = pd.Timedelta(days=window_n_days)
@@ -128,7 +132,7 @@ def sample_non_cluster_windows(close: pd.Series, cluster_windows: list[tuple], w
         end = start + window_td
         if end > idx[-1]:
             continue
-        if any(s <= start <= e or s <= end <= e for s, e in forbidden):
+        if any(start <= e and end >= s for s, e in forbidden):
             continue
         out.append((start, end))
     return out

@@ -164,14 +164,23 @@ def build_regime_series(symbol: str, timeframe: str) -> dict:
     }
 
 
-def regime_before(regime: dict, cluster_start: pd.Timestamp) -> dict | None:
+def regime_before(regime: dict, cluster_start: pd.Timestamp, bar_duration: pd.Timedelta) -> dict | None:
     """取"cluster_start之前"最近一个7天窗口均值（ffill到严格早于cluster_start
     的最后一个bar），换算成3年滚动分布分位数。不允许使用cluster_start及之后
-    的任何数据，保证窗口与换向簇本身的发生时间不重叠。"""
+    的任何数据，保证窗口与换向簇本身的发生时间不重叠。
+
+    `series`的索引是K线**开始**时间，一根bar在其开始时间到结束时间之间都
+    未收线。若直接用`series.index < cluster_start`，当cluster_start落在
+    某根bar内部（而非恰好对齐bar网格整点，这是常态）时，会选中这根尚未
+    收线、实际跨度覆盖到cluster_start之后的bar，造成最长一个bar周期的
+    未来数据泄漏（2026-11-11复核发现）。改为比较bar的结束时间
+    （index + bar_duration）与cluster_start，确保只使用严格在
+    cluster_start之前已经收线完成的bar。
+    """
     out = {}
     for key, dist_key in [("adx", "adx_dist"), ("er", "er_dist"), ("vol", "vol_dist")]:
         series = regime[key].dropna()
-        before = series.loc[series.index < cluster_start]
+        before = series.loc[series.index + bar_duration <= cluster_start]
         if before.empty:
             return None
         val = float(before.iloc[-1])
@@ -228,9 +237,11 @@ def main():
     for asset in ASSETS:
         regime_cache[asset] = build_regime_series(SYMBOL_MAP[asset], args.timeframe)
 
+    bar_duration = pd.Timedelta(days=1) / BARS_PER_DAY[args.timeframe]
+
     cluster_rows = []
     for key, asset, c in all_clusters:
-        r = regime_before(regime_cache[asset], c["cluster_start"])
+        r = regime_before(regime_cache[asset], c["cluster_start"], bar_duration)
         if r is None:
             continue
         r.update({"key": key, "asset": asset, "cluster_start": c["cluster_start"],
@@ -239,7 +250,7 @@ def main():
 
     baseline_rows = []
     for asset, ts in all_trade_entries:
-        r = regime_before(regime_cache[asset], ts)
+        r = regime_before(regime_cache[asset], ts, bar_duration)
         if r is None:
             continue
         r["asset"] = asset
